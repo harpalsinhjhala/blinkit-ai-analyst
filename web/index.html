@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Jhala AI · Blinkit Pulse</title>
 <meta name="description" content="Jhala AI by Harpal Sinh Jhala: ask a Blinkit quick-commerce Power BI dashboard questions in plain English.">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230c6b1f'/%3E%3Ctext x='16' y='22' font-family='Segoe UI,Arial' font-size='15' font-weight='700' fill='%23f8cb46' text-anchor='middle'%3EJA%3C/text%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%234f46e5'/%3E%3Ctext x='16' y='22' font-family='Segoe UI,Arial' font-size='15' font-weight='700' fill='white' text-anchor='middle'%3EHJ%3C/text%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
@@ -14,9 +14,10 @@
 <script src="https://cdn.jsdelivr.net/npm/powerbi-client@2.23.1/dist/powerbi.min.js"></script>
 <style>
   :root {
-    --green: #0c6b1f; --green-2: #0f8a28; --green-soft: #e8f5ea; --yellow: #f8cb46; --yellow-soft: #fff6d6;
-    --bg: #f4f6f3; --panel: #ffffff; --text: #17201a; --muted: #66706a; --line: #e2e7e2;
-    --shadow: 0 1px 2px rgba(16,24,16,.05), 0 6px 24px rgba(16,24,16,.06);
+    --accent: #4f46e5; --accent-2: #4338ca; --accent-soft: #eef0ff; --grad: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+    --ink: #0f1222; --yellow: #f5b83d; --yellow-soft: #fff6e0;
+    --bg: #f4f5fa; --panel: #ffffff; --text: #141826; --muted: #667085; --line: #e4e7ef;
+    --shadow: 0 1px 2px rgba(16,18,40,.05), 0 6px 24px rgba(16,18,40,.07);
     --radius: 14px;
   }
   * { box-sizing: border-box; }
@@ -26,18 +27,27 @@
   a { color: inherit; }
 
   /* ---------- header ---------- */
-  header { display: flex; align-items: center; gap: 14px; padding: 10px 18px; background: var(--panel);
-           border-bottom: 1px solid var(--line); }
-  .mark { width: 36px; height: 36px; border-radius: 10px; background: var(--green); color: var(--yellow);
-          display: grid; place-items: center; font-weight: 700; font-size: 14px; letter-spacing: .5px; flex: none; }
-  .brand h1 { margin: 0; font-size: 16px; font-weight: 700; letter-spacing: -.01em; }
-  .brand p { margin: 0; font-size: 12px; color: var(--muted); }
-  .brand p b { color: var(--text); font-weight: 600; }
+  header { display: flex; align-items: center; gap: 18px; padding: 12px 20px; color: #fff;
+           background: radial-gradient(120% 260% at 0% 0%, #2c2675 0%, var(--ink) 58%), var(--ink); }
+  .me { display: flex; align-items: center; gap: 12px; min-width: 0; }
+  .mark { width: 42px; height: 42px; border-radius: 12px; background: var(--grad); color: #fff; flex: none;
+          display: grid; place-items: center; font-weight: 700; font-size: 15px; letter-spacing: .5px;
+          box-shadow: 0 4px 14px rgba(124,58,237,.45), inset 0 0 0 1px rgba(255,255,255,.18); }
+  .me h1 { margin: 0; font-size: 18px; font-weight: 700; letter-spacing: -.015em; line-height: 1.2; white-space: nowrap; }
+  .me p { margin: 1px 0 0; font-size: 12.5px; color: #aeb4d6; white-space: nowrap; }
+  .project { display: flex; align-items: center; gap: 8px; margin-left: 8px; padding: 5px 12px 5px 5px; border-radius: 99px;
+             background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.12); font-size: 12.5px; color: #d6daf3;
+             white-space: nowrap; min-width: 0; }
+  .project .tag { font-size: 10.5px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: #ddd9ff;
+                  background: rgba(124,58,237,.4); padding: 3px 8px; border-radius: 99px; }
+  .project b { color: #fff; font-weight: 600; }
+  .project .sep { opacity: .45; }
   .head-links { margin-left: auto; display: flex; gap: 8px; align-items: center; }
-  .pill { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 500; text-decoration: none;
-          padding: 6px 11px; border-radius: 99px; border: 1px solid var(--line); background: #fff; color: var(--text); }
-  .pill:hover { border-color: var(--green); color: var(--green); }
-  .pill svg { width: 14px; height: 14px; }
+  .pill { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 500; text-decoration: none;
+          padding: 7px 13px; border-radius: 99px; border: 1px solid rgba(255,255,255,.18); background: rgba(255,255,255,.06);
+          color: #fff; transition: background .15s, border-color .15s; }
+  .pill:hover { background: rgba(255,255,255,.14); border-color: rgba(255,255,255,.35); }
+  .pill svg { width: 15px; height: 15px; }
 
   /* ---------- layout ---------- */
   main { flex: 1; display: flex; padding: 14px; min-height: 0; }
@@ -46,14 +56,14 @@
   .report iframe { width: 100%; height: 100%; border: 0; }
   .report-loading { position: absolute; inset: 0; display: flex; flex-direction: column; gap: 12px; align-items: center;
                     justify-content: center; color: var(--muted); font-size: 13px; z-index: 1; background: var(--panel); }
-  .report-loading::before { content: ""; width: 28px; height: 28px; border-radius: 50%; border: 3px solid var(--green-soft);
-                            border-top-color: var(--green); animation: spin .9s linear infinite; }
+  .report-loading::before { content: ""; width: 28px; height: 28px; border-radius: 50%; border: 3px solid var(--accent-soft);
+                            border-top-color: var(--accent); animation: spin .9s linear infinite; }
   @keyframes spin { to { transform: rotate(360deg); } }
 
   .splitter { flex: 0 0 14px; cursor: col-resize; display: flex; align-items: center; justify-content: center;
               touch-action: none; outline: none; }
-  .splitter::before { content: ""; width: 4px; height: 44px; border-radius: 4px; background: #cfd8cf; transition: height .15s, background .15s; }
-  .splitter:hover::before, .splitter:focus-visible::before, .splitter.dragging::before { background: var(--green); height: 80px; }
+  .splitter::before { content: ""; width: 4px; height: 44px; border-radius: 4px; background: #cfd4e4; transition: height .15s, background .15s; }
+  .splitter:hover::before, .splitter:focus-visible::before, .splitter.dragging::before { background: var(--accent); height: 80px; }
   body.resizing { cursor: col-resize; user-select: none; }
   body.resizing .report * { pointer-events: none; }
 
@@ -61,11 +71,13 @@
   .chat { flex: 0 0 32%; min-width: 320px; display: flex; flex-direction: column; background: var(--panel);
           border-radius: var(--radius); border: 1px solid var(--line); box-shadow: var(--shadow); min-height: 0; overflow: hidden; }
   .chat-head { display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-bottom: 1px solid var(--line);
-               background: linear-gradient(180deg, var(--green-soft), #fff); }
-  .avatar { width: 34px; height: 34px; border-radius: 50%; background: var(--green); color: var(--yellow);
+               background: linear-gradient(180deg, #f3f1ff, #fff); }
+  .avatar { width: 34px; height: 34px; border-radius: 50%; background: var(--grad); color: #fff;
             display: grid; place-items: center; font-weight: 700; font-size: 13px; flex: none; }
   .avatar.sm { width: 26px; height: 26px; font-size: 10px; }
   .chat-head .who b { display: block; font-size: 15px; }
+  .chat-head .who .by { font-style: normal; font-size: 11px; font-weight: 600; color: var(--accent); background: var(--accent-soft);
+                        padding: 1px 7px; border-radius: 99px; margin-left: 4px; vertical-align: 2px; }
   .chat-head .who { min-width: 0; overflow: hidden; }
   .chat-head .who #status { overflow: hidden; text-overflow: ellipsis; display: inline-block; min-width: 0; }
   .chat-head .who span { white-space: nowrap; font-size: 12px; color: var(--muted); display: inline-flex; align-items: center; gap: 6px; }
@@ -74,15 +86,15 @@
   .dot.bad { background: #d64545; }
   .icon-btn { margin-left: auto; border: 1px solid var(--line); background: #fff; border-radius: 8px; padding: 6px 10px;
               font: 500 12px Inter, sans-serif; color: var(--muted); cursor: pointer; display: inline-flex; gap: 6px; align-items: center; white-space: nowrap; flex: none; }
-  .icon-btn:hover { color: var(--green); border-color: var(--green); }
+  .icon-btn:hover { color: var(--accent); border-color: var(--accent); }
 
   #log { flex: 1; overflow-y: auto; padding: 16px 14px; display: flex; flex-direction: column; gap: 14px; }
   .row { display: flex; gap: 8px; align-items: flex-start; animation: rise .22s ease-out; }
   .row.user { justify-content: flex-end; }
   @keyframes rise { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
   .msg { max-width: 88%; padding: 10px 13px; border-radius: 14px; line-height: 1.5; overflow-wrap: anywhere; min-width: 0; }
-  .row.user .msg { background: var(--green); color: #fff; border-bottom-right-radius: 4px; }
-  .row.bot .msg { background: #f6f8f6; border: 1px solid var(--line); border-top-left-radius: 4px; }
+  .row.user .msg { background: var(--grad); color: #fff; border-bottom-right-radius: 4px; }
+  .row.bot .msg { background: #f6f7fb; border: 1px solid var(--line); border-top-left-radius: 4px; }
   .row.bot.wide .msg { flex: 1; max-width: calc(100% - 34px); }
   .msg p { margin: 4px 0; }
   .msg ul, .msg ol { margin: 4px 0; padding-left: 20px; }
@@ -91,29 +103,29 @@
   .msg blockquote p { margin: 0; }
   .msg table { border-collapse: collapse; margin: 8px 0; font-size: 13px; width: 100%; background: #fff; }
   .msg th, .msg td { border-bottom: 1px solid var(--line); padding: 6px 9px; text-align: left; }
-  .msg th { background: var(--green-soft); font-weight: 600; color: var(--green); }
+  .msg th { background: var(--accent-soft); font-weight: 600; color: var(--accent); }
   .msg td:not(:first-child), .msg th:not(:first-child) { text-align: right; font-variant-numeric: tabular-nums; }
   .chart { width: 100%; height: 290px; margin: 2px 0 8px; background: #fff; border: 1px solid var(--line); border-radius: 10px; }
 
   .meta { display: flex; align-items: center; gap: 10px; margin-top: 8px; font-size: 11.5px; color: var(--muted); }
   .meta button { background: none; border: 0; padding: 0; color: var(--muted); cursor: pointer; font: inherit; }
-  .meta button:hover { color: var(--green); }
+  .meta button:hover { color: var(--accent); }
   details.trace { margin-top: 4px; font-size: 11.5px; color: var(--muted); }
   details.trace summary { cursor: pointer; list-style: none; display: inline-flex; gap: 5px; align-items: center; }
   details.trace summary::-webkit-details-marker { display: none; }
   details.trace summary::before { content: "▸"; transition: transform .15s; }
   details.trace[open] summary::before { transform: rotate(90deg); }
   details.trace code { display: block; margin-top: 4px; padding: 5px 8px; background: #fff; border: 1px solid var(--line);
-                       border-radius: 6px; font: 11px/1.45 Consolas, monospace; color: #33433a; white-space: pre-wrap; }
+                       border-radius: 6px; font: 11px/1.45 Consolas, monospace; color: #2f3550; white-space: pre-wrap; }
   details.trace code.err { border-color: #f3c4c4; color: #b42318; }
 
   .suggest { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 10px; }
   .suggest button { text-align: left; font: 500 12.5px/1.35 Inter, sans-serif; color: var(--text); background: #fff;
                     border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; cursor: pointer; }
-  .suggest button:hover { border-color: var(--green); background: var(--green-soft); }
+  .suggest button:hover { border-color: var(--accent); background: var(--accent-soft); }
 
   .typing { display: inline-flex; align-items: center; gap: 5px; color: var(--muted); font-size: 13px; }
-  .typing i { width: 6px; height: 6px; border-radius: 50%; background: var(--green); display: inline-block; animation: blink 1.2s infinite; }
+  .typing i { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); display: inline-block; animation: blink 1.2s infinite; }
   .typing i:nth-child(2) { animation-delay: .2s; } .typing i:nth-child(3) { animation-delay: .4s; }
   .typing span { margin-left: 4px; }
   @keyframes blink { 0%, 80%, 100% { opacity: .25; } 40% { opacity: 1; } }
@@ -121,31 +133,34 @@
   .chips { display: flex; gap: 6px; overflow-x: auto; padding: 8px 14px 0; scrollbar-width: none; }
   .chips:empty { display: none; }
   .chips::-webkit-scrollbar { display: none; }
-  .chips button { flex: none; font: 500 12px Inter, sans-serif; border: 1px solid var(--line); background: #fff; color: var(--green);
+  .chips button { flex: none; font: 500 12px Inter, sans-serif; border: 1px solid var(--line); background: #fff; color: var(--accent);
                   padding: 5px 10px; border-radius: 99px; cursor: pointer; white-space: nowrap; }
-  .chips button:hover { background: var(--green-soft); }
+  .chips button:hover { background: var(--accent-soft); }
   .composer { padding: 10px 14px 12px; }
   .box { display: flex; align-items: flex-end; gap: 8px; border: 1px solid var(--line); border-radius: 12px; padding: 6px 6px 6px 12px;
          background: #fff; transition: border-color .15s, box-shadow .15s; }
-  .box:focus-within { border-color: var(--green); box-shadow: 0 0 0 3px rgba(12,107,31,.12); }
+  .box:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(79,70,229,.15); }
   textarea { flex: 1; border: 0; outline: none; resize: none; font: 14px/1.45 Inter, sans-serif; padding: 7px 0; max-height: 120px; overflow-y: hidden;
              color: var(--text); background: transparent; }
-  .send { width: 36px; height: 36px; border-radius: 10px; border: 0; background: var(--green); color: #fff; cursor: pointer;
+  .send { width: 36px; height: 36px; border-radius: 10px; border: 0; background: var(--grad); color: #fff; cursor: pointer;
           display: grid; place-items: center; flex: none; }
-  .send:hover { background: var(--green-2); }
+  .send:hover { filter: brightness(1.1); }
   .send:disabled { opacity: .4; cursor: default; }
   .foot { font-size: 11px; color: var(--muted); text-align: center; margin-top: 7px; }
 
   /* ---------- mobile: tabs instead of side by side ---------- */
   .tabs { display: none; }
   @media (max-width: 900px) {
-    header { padding: 10px 16px; }
+    header { padding: 10px 16px; gap: 10px; }
+    .project { display: none; }
+    .mark { width: 36px; height: 36px; font-size: 13px; }
+    .me h1 { font-size: 16px; }
     .head-links .pill span { display: none; }
     main { padding: 10px 16px 16px; flex-direction: column; }
-    .tabs { display: flex; gap: 4px; margin: 10px 16px 0; padding: 4px; background: #e6ebe6; border-radius: 10px; }
+    .tabs { display: flex; gap: 4px; margin: 10px 16px 0; padding: 4px; background: #e6e8f2; border-radius: 10px; }
     .tabs button { flex: 1; border: 0; background: transparent; padding: 7px; border-radius: 7px; font: 600 13px Inter, sans-serif;
                    color: var(--muted); cursor: pointer; }
-    .tabs button.on { background: #fff; color: var(--green); box-shadow: var(--shadow); }
+    .tabs button.on { background: #fff; color: var(--accent); box-shadow: var(--shadow); }
     .splitter { display: none; }
     .chat, .report { flex: 1 !important; min-width: 0; }
     body[data-tab="chat"] .report, body[data-tab="report"] .chat { display: none; }
@@ -155,15 +170,21 @@
 </head>
 <body data-tab="chat">
 <header>
-  <div class="mark" aria-hidden="true">JA</div>
-  <div class="brand">
-    <h1 id="title">Blinkit Pulse</h1>
-    <p>AI analytics by <b>Harpal Sinh Jhala</b></p>
+  <div class="me">
+    <div class="mark" aria-hidden="true">HJ</div>
+    <div>
+      <h1>Harpal Sinh Jhala</h1>
+      <p>Data Analyst · Power BI Developer</p>
+    </div>
+  </div>
+  <div class="project" title="The project on this page">
+    <span class="tag">Project</span>
+    <b id="title">Blinkit Pulse</b><span class="sep">·</span><span>Power BI + Jhala AI</span>
   </div>
   <nav class="head-links">
     <a class="pill" href="https://github.com/harpalsinhjhala/blinkit-ai-analyst" target="_blank" rel="noopener" title="Source code on GitHub">
       <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
-      <span>Source</span>
+      <span>View on GitHub</span>
     </a>
   </nav>
 </header>
@@ -207,9 +228,9 @@
        aria-label="Drag to resize the dashboard and chat (double-click to reset)" title="Drag to resize · double-click to reset"></div>
   <section class="chat" aria-label="Jhala AI chat">
     <div class="chat-head">
-      <div class="avatar" aria-hidden="true">J</div>
+      <div class="avatar" aria-hidden="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l1.9 5.6L19.5 9.5l-5.6 1.9L12 17l-1.9-5.6L4.5 9.5l5.6-1.9z"/><path d="M19 14l.9 2.6 2.6.9-2.6.9L19 21l-.9-2.6-2.6-.9 2.6-.9z" opacity=".8"/></svg></div>
       <div class="who">
-        <b>Jhala AI</b>
+        <b>Jhala AI <em class="by">by Harpal</em></b>
         <span><i class="dot" id="dot"></i><span id="status">Connecting…</span></span>
       </div>
       <button type="button" class="icon-btn" id="reset" title="Start a new conversation">
@@ -238,7 +259,7 @@
   const md = s => DOMPurify.sanitize(marked.parse(s || ""));
 
   // ---------- charts ----------
-  const COLORS = ["#0c6b1f", "#e0a800", "#3b82c4", "#d9622b", "#7c4dbd", "#2aa198", "#8a8f8b"];
+  const COLORS = ["#4f46e5", "#f59e0b", "#0ea5a4", "#ec4899", "#8b5cf6", "#64748b", "#22c55e"];
   function drawChart(parent, c, before) {
     const el = document.createElement("div");
     el.className = "chart";
@@ -260,14 +281,14 @@
     const usesY2 = traces.some(t => t.yaxis === "y2"), allPct = c.series.every(s => s.pct),
           anyInr = c.series.some(s => s.inr && !s.pct);
     Plotly.newPlot(el, traces, {
-      title: {text: c.title, font: {size: 13, family: "Inter, sans-serif", color: "#17201a"}, x: 0.03},
+      title: {text: c.title, font: {size: 13, family: "Inter, sans-serif", color: "#141826"}, x: 0.03},
       margin: {l: 56, r: usesY2 ? 50 : 16, t: 40, b: 56}, paper_bgcolor: "#fff", plot_bgcolor: "#fff",
-      font: {family: "Inter, Segoe UI, sans-serif", size: 11, color: "#4a554d"},
+      font: {family: "Inter, Segoe UI, sans-serif", size: 11, color: "#4a5068"},
       showlegend: c.series.length > 1 || c.type === "pie",
       legend: {orientation: "h", y: -0.25, title: {text: c.legend_title ? c.legend_title + ": " : ""}},
       barmode: c.stacked ? "stack" : "group", bargap: .3, xaxis: {type: "category", automargin: true},
       yaxis: {tickformat: allPct ? ".0%" : "~s", tickprefix: anyInr ? "₹" : "", automargin: true, rangemode: "tozero",
-              gridcolor: "#eef1ee", title: {text: c.y_title || "", font: {size: 11}}},
+              gridcolor: "#eef0f6", title: {text: c.y_title || "", font: {size: 11}}},
       yaxis2: {overlaying: "y", side: "right", tickformat: ".0%", showgrid: false, rangemode: "tozero"},
     }, {displaylogo: false, responsive: true, modeBarButtonsToRemove: ["lasso2d", "select2d", "autoScale2d"]});
   }
@@ -276,7 +297,7 @@
   function row(role, html, wide) {
     const r = document.createElement("div");
     r.className = "row " + role + (wide ? " wide" : "");
-    r.innerHTML = (role === "bot" ? '<div class="avatar sm" aria-hidden="true">J</div>' : "") + '<div class="msg"></div>';
+    r.innerHTML = (role === "bot" ? '<div class="avatar sm" aria-hidden="true"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l1.9 5.6L19.5 9.5l-5.6 1.9L12 17l-1.9-5.6L4.5 9.5l5.6-1.9z"/><path d="M19 14l.9 2.6 2.6.9-2.6.9L19 21l-.9-2.6-2.6-.9 2.6-.9z" opacity=".8"/></svg></div>' : "") + '<div class="msg"></div>';
     r.querySelector(".msg").innerHTML = html;
     log.appendChild(r);
     log.scrollTop = log.scrollHeight;
@@ -322,7 +343,7 @@
 
   function welcome() {
     log.innerHTML = "";
-    const r = row("bot", md(model.greeting || "Hi, I'm **Jhala AI**. Ask me anything about the dashboard."), true);
+    const r = row("bot", md(model.greeting || "Hi, I'm **Jhala AI** 👋 Ask me anything about this dashboard."), true);
     const s = model.suggestions || [];
     if (s.length) {
       const g = document.createElement("div");

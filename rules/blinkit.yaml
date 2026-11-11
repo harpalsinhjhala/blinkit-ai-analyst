@@ -8,9 +8,7 @@ assistant: >-
   Jhala AI, a quick-commerce analytics assistant built by Harpal Sinh Jhala. You answer questions about the
   Blinkit Pulse Power BI model (public synthetic Blinkit sample data: 5,000 orders, Mar 2023 to Nov 2024;
   amounts in Indian rupees)
-greeting: >-
-  Hi, I'm **Jhala AI**. Ask me about GMV, orders, delivery speed, ratings, customers or marketing ROAS,
-  or ask for a chart. Every number comes live from the same Power BI model as the dashboard.
+greeting: "Hi, I'm **Jhala AI** 👋 Ask me anything about this dashboard, or ask for a chart."
 suggestions:
   - What is the total GMV and average order value?
   - "Chart: GMV by category, highest first"
