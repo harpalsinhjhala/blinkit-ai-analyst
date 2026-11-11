@@ -77,7 +77,8 @@ def _call_llm(messages):
     if state.get("main_model_out_until", 0) > time.time() and len(models) > 1:
         models = models[1:]
     model = models[0]
-    for attempt in range(5):
+    bad_tool_calls = 0
+    for attempt in range(7):
         r = requests.post(
             GROQ_URL,
             headers={"Authorization": f"Bearer {key}"},
@@ -90,6 +91,11 @@ def _call_llm(messages):
             },
             timeout=60,
         )
+        # The model produced a tool call that doesn't match the tool's schema: sampling differs per call,
+        # so ask again (up to 2 times) instead of showing the visitor a raw API error.
+        if r.status_code == 400 and "tool_use_failed" in r.text and bad_tool_calls < 2:
+            bad_tool_calls += 1
+            continue
         if r.status_code != 429:
             break
         if "per day" in r.text and model != models[-1]:  # main model's daily quota used up -> fallback model
@@ -123,10 +129,12 @@ CHART_TOOL = {"type": "function", "function": {
         "chart_type": {"type": "string", "enum": ["bar", "line", "pie"]},
         "x": {"type": "string", "description": "Column for the categories / x-axis, e.g. a field name"},
         "y": {"type": "array", "items": {"type": "string"}, "description": "Measure / value columns to plot"},
-        "color_by": {"type": "string", "description": "Optional second field: one coloured series per value "
-                                                      "(e.g. 'Year'). Use with exactly one y column."},
-        "stacked": {"type": "boolean", "description": "Bar charts with color_by: stack the colours in one bar "
-                                                     "(true) or put them side by side (false, default)."},
+        # Optional fields also accept null: models often send null for "not used", and Groq rejects the
+        # whole call (400 tool_use_failed) when that doesn't match the schema.
+        "color_by": {"type": ["string", "null"], "description": "Optional second field: one coloured series per "
+                                                              "value (e.g. 'Year'). Use with exactly one y column."},
+        "stacked": {"type": ["boolean", "null"], "description": "Bar charts with color_by: stack the colours in one "
+                                                              "bar (true) or put them side by side (false, default)."},
         "title": {"type": "string"},
     }, "required": ["chart_type", "x", "y", "title"]},
 }}
