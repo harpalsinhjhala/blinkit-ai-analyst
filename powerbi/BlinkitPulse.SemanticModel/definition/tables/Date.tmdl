@@ -1,0 +1,128 @@
+/// Calendar for 2023–2024, generated in Power Query. Marked as the model's date table.
+table Date
+	lineageTag: fbb26bbc-c015-43d1-ac55-c79885ffb4c0
+	dataCategory: Time
+
+	column Date
+		dataType: dateTime
+		isKey
+		formatString: dd mmm yyyy
+		lineageTag: 7108f485-c8c3-437f-98ab-deb61a4808f2
+		summarizeBy: none
+		sourceColumn: Date
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column Year
+		dataType: int64
+		formatString: 0
+		lineageTag: da8223a5-29ed-4454-a24b-ce491f65c5fe
+		summarizeBy: none
+		sourceColumn: Year
+
+	column Quarter
+		dataType: string
+		lineageTag: 441b51c3-273b-45f7-9f1e-7f4b99105a23
+		summarizeBy: none
+		sourceColumn: Quarter
+
+	column 'Month Number'
+		dataType: int64
+		isHidden
+		lineageTag: 36d48f69-de85-4b2d-b1bd-20cabaa619f3
+		summarizeBy: none
+		sourceColumn: Month Number
+
+	column Month
+		dataType: string
+		lineageTag: 3bc8a1f3-efb9-470c-9679-a9cf3abedf79
+		summarizeBy: none
+		sourceColumn: Month
+		sortByColumn: 'Month Number'
+
+	/// Month and year label, e.g. "Mar 2024". Sorts chronologically.
+	column 'Month Year'
+		dataType: string
+		lineageTag: 1e9f3029-58e2-43fa-8538-041260f09f0f
+		summarizeBy: none
+		sourceColumn: Month Year
+		sortByColumn: 'Month Year Key'
+
+	column 'Month Year Key'
+		dataType: int64
+		isHidden
+		lineageTag: d5d3bb5a-5899-4eae-be89-17f3e6613ba6
+		summarizeBy: none
+		sourceColumn: Month Year Key
+
+	/// First day of the month; use on continuous date axes.
+	column 'Month Start'
+		dataType: dateTime
+		formatString: mmm yyyy
+		lineageTag: 065f2301-895c-4d18-8bb3-774929673942
+		summarizeBy: none
+		sourceColumn: Month Start
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column 'Day of Week'
+		dataType: string
+		lineageTag: 2dc3e4b5-d77f-4273-a3a4-4f32e5059c01
+		summarizeBy: none
+		sourceColumn: Day of Week
+		sortByColumn: 'Day of Week Number'
+
+	column 'Day of Week Number'
+		dataType: int64
+		isHidden
+		lineageTag: 06396b06-b903-4100-a97c-f9f13e63d932
+		summarizeBy: none
+		sourceColumn: Day of Week Number
+
+	/// Weekend (Sat–Sun) or Weekday.
+	column 'Day Type'
+		dataType: string
+		lineageTag: 21adfc37-8f25-4678-b73f-5d8eb6eda003
+		summarizeBy: none
+		sourceColumn: Day Type
+
+	hierarchy 'Calendar Hierarchy'
+		lineageTag: db5f4d02-9d63-480b-bd65-f3a53abd2345
+
+		level Year
+			lineageTag: 9bf58381-1c13-47f3-b250-7db8c8e3015d
+			column: Year
+
+		level Quarter
+			lineageTag: 27623644-7726-46b4-a447-ef6393f1f04d
+			column: Quarter
+
+		level Month
+			lineageTag: b1beda27-9550-4471-b94f-00fbb0419a43
+			column: 'Month Year'
+
+		level Date
+			lineageTag: f39d2a0a-d294-4c79-a2ab-1d51c836a409
+			column: Date
+
+	partition Date = m
+		mode: import
+		source =
+				let
+					StartDate = #date(2023, 1, 1),
+					EndDate = #date(2024, 12, 31),
+					Dates = List.Dates(StartDate, Duration.Days(EndDate - StartDate) + 1, #duration(1, 0, 0, 0)),
+					Base = Table.FromColumns({Dates}, type table [Date = date]),
+					AddYear = Table.AddColumn(Base, "Year", each Date.Year([Date]), Int64.Type),
+					AddQuarter = Table.AddColumn(AddYear, "Quarter", each "Q" & Text.From(Date.QuarterOfYear([Date])), type text),
+					AddMonthNumber = Table.AddColumn(AddQuarter, "Month Number", each Date.Month([Date]), Int64.Type),
+					AddMonth = Table.AddColumn(AddMonthNumber, "Month", each Date.ToText([Date], "MMM", "en-US"), type text),
+					AddMonthYear = Table.AddColumn(AddMonth, "Month Year", each Date.ToText([Date], "MMM yyyy", "en-US"), type text),
+					AddMonthYearKey = Table.AddColumn(AddMonthYear, "Month Year Key", each Date.Year([Date]) * 100 + Date.Month([Date]), Int64.Type),
+					AddMonthStart = Table.AddColumn(AddMonthYearKey, "Month Start", each Date.StartOfMonth([Date]), type date),
+					AddDayOfWeek = Table.AddColumn(AddMonthStart, "Day of Week", each Date.ToText([Date], "ddd", "en-US"), type text),
+					AddDayOfWeekNumber = Table.AddColumn(AddDayOfWeek, "Day of Week Number", each Date.DayOfWeek([Date], Day.Monday) + 1, Int64.Type),
+					AddDayType = Table.AddColumn(AddDayOfWeekNumber, "Day Type", each if Date.DayOfWeek([Date], Day.Monday) >= 5 then "Weekend" else "Weekday", type text)
+				in
+					AddDayType
+

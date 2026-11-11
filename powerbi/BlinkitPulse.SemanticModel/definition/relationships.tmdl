@@ -1,0 +1,24 @@
+relationship 'Orders to Date'
+	fromColumn: Orders.'Order Date'
+	toColumn: Date.Date
+
+relationship 'Orders to Product'
+	fromColumn: Orders.'Product ID'
+	toColumn: Product.'Product ID'
+
+relationship 'Orders to Customer'
+	fromColumn: Orders.'Customer ID'
+	toColumn: Customer.'Customer ID'
+
+relationship 'Marketing to Date'
+	fromColumn: Marketing.Date
+	toColumn: Date.Date
+
+relationship 'Inventory to Date'
+	fromColumn: Inventory.Date
+	toColumn: Date.Date
+
+relationship 'Inventory to Product'
+	fromColumn: Inventory.'Product ID'
+	toColumn: Product.'Product ID'
+

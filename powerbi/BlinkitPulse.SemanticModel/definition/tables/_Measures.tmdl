@@ -1,0 +1,498 @@
+/// Home of every measure in the model, grouped by display folder. Holds no data.
+table _Measures
+	lineageTag: 09525b7f-1383-4c7c-a965-62f98e65c8fb
+
+	/// Count of orders placed.
+	measure 'Total Orders' = COUNTROWS(Orders)
+		displayFolder: Sales
+		lineageTag: b041e35e-d8b6-4233-bbba-170cf2c8c41a
+
+		formatStringDefinition =
+				-- Indian number system: crore (1,00,00,000) and lakh (1,00,000); the result is a literal format string
+				VAR _Value = SELECTEDMEASURE()
+				RETURN
+					SWITCH(
+						TRUE(),
+						ABS(_Value) >= 10000000, """" & FORMAT(_Value / 10000000, "0.00") & " Cr""",
+						ABS(_Value) >= 100000, """" & FORMAT(_Value / 100000, "0.00") & " L""",
+						"#,##0"
+					)
+
+	/// Gross merchandise value: sum of the billed order total (INR). Used for all revenue cuts, including by product and category, because every order holds exactly one product.
+	measure GMV = SUM(Orders[Order Total])
+		displayFolder: Sales
+		lineageTag: e8fede61-2877-437c-b19e-f6d36d794979
+
+		formatStringDefinition =
+				-- Indian number system: crore (1,00,00,000) and lakh (1,00,000); the result is a literal format string
+				VAR _Value = SELECTEDMEASURE()
+				RETURN
+					SWITCH(
+						TRUE(),
+						ABS(_Value) >= 10000000, """₹" & FORMAT(_Value / 10000000, "0.00") & " Cr""",
+						ABS(_Value) >= 100000, """₹" & FORMAT(_Value / 100000, "0.00") & " L""",
+						"₹#,##0"
+					)
+
+	/// GMV divided by orders.
+	measure 'Average Order Value' = DIVIDE([GMV], [Total Orders])
+		displayFolder: Sales
+		lineageTag: c3964d5f-e1e9-4cdf-aea1-04f486cebee6
+
+		formatStringDefinition =
+				-- Indian number system: crore (1,00,00,000) and lakh (1,00,000); the result is a literal format string
+				VAR _Value = SELECTEDMEASURE()
+				RETURN
+					SWITCH(
+						TRUE(),
+						ABS(_Value) >= 10000000, """₹" & FORMAT(_Value / 10000000, "0.00") & " Cr""",
+						ABS(_Value) >= 100000, """₹" & FORMAT(_Value / 100000, "0.00") & " L""",
+						"₹#,##0"
+					)
+
+	/// Sum of item quantities across orders.
+	measure 'Units Sold' = SUM(Orders[Quantity])
+		displayFolder: Sales
+		lineageTag: 617bff48-2b4b-4eae-8c10-2d09840e4f0f
+
+		formatStringDefinition =
+				-- Indian number system: crore (1,00,00,000) and lakh (1,00,000); the result is a literal format string
+				VAR _Value = SELECTEDMEASURE()
+				RETURN
+					SWITCH(
+						TRUE(),
+						ABS(_Value) >= 10000000, """" & FORMAT(_Value / 10000000, "0.00") & " Cr""",
+						ABS(_Value) >= 100000, """" & FORMAT(_Value / 100000, "0.00") & " L""",
+						"#,##0"
+					)
+
+	/// Estimated gross margin: order total x the product's margin percentage.
+	measure 'Gross Margin' = SUM(Orders[Gross Margin Amount])
+		displayFolder: Sales
+		lineageTag: 43fe33fd-5ffc-4ed2-b22e-c3db04a88671
+
+		formatStringDefinition =
+				-- Indian number system: crore (1,00,00,000) and lakh (1,00,000); the result is a literal format string
+				VAR _Value = SELECTEDMEASURE()
+				RETURN
+					SWITCH(
+						TRUE(),
+						ABS(_Value) >= 10000000, """₹" & FORMAT(_Value / 10000000, "0.00") & " Cr""",
+						ABS(_Value) >= 100000, """₹" & FORMAT(_Value / 100000, "0.00") & " L""",
+						"₹#,##0"
+					)
+
+	/// Gross margin as a share of GMV.
+	measure 'Gross Margin %' = DIVIDE([Gross Margin], [GMV])
+		formatString: 0.0%
+		displayFolder: Sales
+		lineageTag: bacf49f0-cee7-45da-b656-a9c0a3835297
+
+	/// GMV for the same period shifted back one month. Needs a continuous date selection.
+	measure 'GMV PM' = CALCULATE([GMV], DATEADD('Date'[Date], -1, MONTH))
+		displayFolder: Sales\Time Intelligence
+		lineageTag: d81599a7-b1cd-4469-beac-e5a55b130949
+
+		formatStringDefinition =
+				-- Indian number system: crore (1,00,00,000) and lakh (1,00,000); the result is a literal format string
+				VAR _Value = SELECTEDMEASURE()
+				RETURN
+					SWITCH(
+						TRUE(),
+						ABS(_Value) >= 10000000, """₹" & FORMAT(_Value / 10000000, "0.00") & " Cr""",
+						ABS(_Value) >= 100000, """₹" & FORMAT(_Value / 100000, "0.00") & " L""",
+						"₹#,##0"
+					)
+
+	/// Month-over-month GMV growth. Blank when either period has no orders.
+	measure 'GMV MoM %' =
+			VAR _Current = [GMV]
+			VAR _Previous = [GMV PM]
+			RETURN
+				IF(NOT ISBLANK(_Current) && NOT ISBLANK(_Previous), DIVIDE(_Current - _Previous, _Previous))
+		formatString: +0.0%;-0.0%;0.0%
+		displayFolder: Sales\Time Intelligence
+		lineageTag: 0bc09a8a-ae04-4039-9a89-0bda3a4b1339
+
+	/// GMV for the same period one year earlier. Data starts mid-March 2023, so Jan–Mar 2024 comparisons are inflated.
+	measure 'GMV PY' = CALCULATE([GMV], SAMEPERIODLASTYEAR('Date'[Date]))
+		displayFolder: Sales\Time Intelligence
+		lineageTag: a5f585d0-0ca9-4899-a6c3-793c8da717e3
+
+		formatStringDefinition =
+				-- Indian number system: crore (1,00,00,000) and lakh (1,00,000); the result is a literal format string
+				VAR _Value = SELECTEDMEASURE()
+				RETURN
+					SWITCH(
+						TRUE(),
+						ABS(_Value) >= 10000000, """₹" & FORMAT(_Value / 10000000, "0.00") & " Cr""",
+						ABS(_Value) >= 100000, """₹" & FORMAT(_Value / 100000, "0.00") & " L""",
+						"₹#,##0"
+					)
+
+	/// Year-over-year GMV growth. Blank when either period has no orders.
+	measure 'GMV YoY %' =
+			VAR _Current = [GMV]
+			VAR _Previous = [GMV PY]
+			RETURN
+				IF(NOT ISBLANK(_Current) && NOT ISBLANK(_Previous), DIVIDE(_Current - _Previous, _Previous))
+		formatString: +0.0%;-0.0%;0.0%
+		displayFolder: Sales\Time Intelligence
+		lineageTag: fb040fff-abd3-48a1-9d7a-0db51ca375ff
+
+	/// Orders for the same period shifted back one month.
+	measure 'Orders PM' = CALCULATE([Total Orders], DATEADD('Date'[Date], -1, MONTH))
+		displayFolder: Sales\Time Intelligence
+		lineageTag: cafe7f9f-5ff4-4100-ac4a-d8fc59c6861f
+
+		formatStringDefinition =
+				-- Indian number system: crore (1,00,00,000) and lakh (1,00,000); the result is a literal format string
+				VAR _Value = SELECTEDMEASURE()
+				RETURN
+					SWITCH(
+						TRUE(),
+						ABS(_Value) >= 10000000, """" & FORMAT(_Value / 10000000, "0.00") & " Cr""",
+						ABS(_Value) >= 100000, """" & FORMAT(_Value / 100000, "0.00") & " L""",
+						"#,##0"
+					)
+
+	/// Month-over-month order growth. Blank when either period has no orders.
+	measure 'Orders MoM %' =
+			VAR _Current = [Total Orders]
+			VAR _Previous = [Orders PM]
+			RETURN
+				IF(NOT ISBLANK(_Current) && NOT ISBLANK(_Previous), DIVIDE(_Current - _Previous, _Previous))
+		formatString: +0.0%;-0.0%;0.0%
+		displayFolder: Sales\Time Intelligence
+		lineageTag: 64c57b6d-767d-4b8b-86e8-21b7aca45bd1
+
+	/// Distinct customers who placed at least one order in the selected context.
+	measure 'Active Customers' = DISTINCTCOUNT(Orders[Customer ID])
+		displayFolder: Customers
+		lineageTag: 3eeb8ffc-3129-4c21-8e81-20d76ef73c77
+
+		formatStringDefinition =
+				-- Indian number system: crore (1,00,00,000) and lakh (1,00,000); the result is a literal format string
+				VAR _Value = SELECTEDMEASURE()
+				RETURN
+					SWITCH(
+						TRUE(),
+						ABS(_Value) >= 10000000, """" & FORMAT(_Value / 10000000, "0.00") & " Cr""",
+						ABS(_Value) >= 100000, """" & FORMAT(_Value / 100000, "0.00") & " L""",
+						"#,##0"
+					)
+
+	/// Orders per active customer.
+	measure 'Orders per Customer' = DIVIDE([Total Orders], [Active Customers])
+		formatString: 0.00
+		displayFolder: Customers
+		lineageTag: 61662002-389d-4062-82f8-753d067c8463
+
+	/// Active customers with more than one order in the selected context.
+	measure 'Repeat Customers' =
+			COUNTROWS(
+				FILTER(
+					VALUES(Orders[Customer ID]),
+					CALCULATE(COUNTROWS(Orders)) > 1
+				)
+			)
+		displayFolder: Customers
+		lineageTag: e0c22210-bff4-4895-a339-793bf9f1df50
+
+		formatStringDefinition =
+				-- Indian number system: crore (1,00,00,000) and lakh (1,00,000); the result is a literal format string
+				VAR _Value = SELECTEDMEASURE()
+				RETURN
+					SWITCH(
+						TRUE(),
+						ABS(_Value) >= 10000000, """" & FORMAT(_Value / 10000000, "0.00") & " Cr""",
+						ABS(_Value) >= 100000, """" & FORMAT(_Value / 100000, "0.00") & " L""",
+						"#,##0"
+					)
+
+	/// Share of active customers who ordered more than once in the selected context.
+	measure 'Repeat Customer Rate' = DIVIDE([Repeat Customers], [Active Customers])
+		formatString: 0.0%
+		displayFolder: Customers
+		lineageTag: 7b577d08-b5be-405e-ad8f-2805dbdf6a7b
+
+	/// Share of orders with delivery status "On Time" (source-defined; allows a small buffer past the promised time).
+	measure 'On-Time Delivery %' = DIVIDE(SUM(Orders[Is On Time]), [Total Orders])
+		formatString: 0.0%
+		displayFolder: Delivery
+		lineageTag: 237eca72-e4af-4ee7-8e39-47eca5fdd55e
+
+	/// Orders marked Slightly or Significantly Delayed.
+	measure 'Delayed Orders' = CALCULATE([Total Orders], KEEPFILTERS(Orders[Delivery Status] <> "On Time"))
+		displayFolder: Delivery
+		lineageTag: 9d39b790-cb4d-44ba-8fb0-0d0902882006
+
+		formatStringDefinition =
+				-- Indian number system: crore (1,00,00,000) and lakh (1,00,000); the result is a literal format string
+				VAR _Value = SELECTEDMEASURE()
+				RETURN
+					SWITCH(
+						TRUE(),
+						ABS(_Value) >= 10000000, """" & FORMAT(_Value / 10000000, "0.00") & " Cr""",
+						ABS(_Value) >= 100000, """" & FORMAT(_Value / 100000, "0.00") & " L""",
+						"#,##0"
+					)
+
+	/// Delayed orders as a share of all orders.
+	measure 'Delayed Order %' = DIVIDE([Delayed Orders], [Total Orders])
+		formatString: 0.0%
+		displayFolder: Delivery
+		lineageTag: 5fbfd927-842f-418e-850e-15e1562cc382
+
+	/// Average minutes from order placed to delivered.
+	measure 'Avg Delivery Time (min)' = AVERAGE(Orders[Delivery Minutes])
+		formatString: 0.0
+		displayFolder: Delivery
+		lineageTag: 5184cc4d-d0d7-4674-a24b-9b0ad62b42e0
+
+	/// Average minutes promised to the customer at checkout.
+	measure 'Avg Promised Time (min)' = AVERAGE(Orders[Promised Minutes])
+		formatString: 0.0
+		displayFolder: Delivery
+		lineageTag: ca0fdac3-7913-495f-9d82-ef320158ae0b
+
+	/// Average minutes past the promised time, for delayed orders only.
+	measure 'Avg Delay When Late (min)' = CALCULATE(AVERAGE(Orders[Delay Minutes]), KEEPFILTERS(Orders[Delivery Status] <> "On Time"))
+		formatString: 0.0
+		displayFolder: Delivery
+		lineageTag: ab4ebf28-52dc-451e-9ba8-0fe50ef33aab
+
+	/// Average delivery distance in kilometres.
+	measure 'Avg Distance (km)' = AVERAGE(Orders[Distance Km])
+		formatString: 0.00
+		displayFolder: Delivery
+		lineageTag: 875f8788-4293-48ef-a5f4-172a63ac2e16
+
+	/// Share of orders delivered within 15 minutes of being placed (quick-commerce promise benchmark).
+	measure 'Delivered Within 15 Min %' = DIVIDE(CALCULATE([Total Orders], KEEPFILTERS(Orders[Delivery Minutes] <= 15)), [Total Orders])
+		formatString: 0.0%
+		displayFolder: Delivery
+		lineageTag: f6e08bfc-3811-4aba-b352-8016f1a93f88
+
+	/// Average customer rating (1–5) left after the order.
+	measure 'Average Rating' = AVERAGE(Orders[Rating])
+		formatString: 0.00
+		displayFolder: Customer Experience
+		lineageTag: de551032-65d9-4c77-996e-43f12c38c0db
+
+	/// Customer satisfaction: share of orders rated 4 or 5.
+	measure 'CSAT %' = DIVIDE(CALCULATE([Total Orders], KEEPFILTERS(Orders[Rating] >= 4)), [Total Orders])
+		formatString: 0.0%
+		displayFolder: Customer Experience
+		lineageTag: 0cc05ffd-93b4-4df7-b3cb-ecdc95c4bd53
+
+	/// Share of feedback tagged Positive.
+	measure 'Positive Feedback %' = DIVIDE(CALCULATE([Total Orders], KEEPFILTERS(Orders[Sentiment] = "Positive")), [Total Orders])
+		formatString: 0.0%
+		displayFolder: Customer Experience
+		lineageTag: a8585414-4961-4c80-8a3c-91591b994658
+
+	/// Share of feedback tagged Negative.
+	measure 'Negative Feedback %' = DIVIDE(CALCULATE([Total Orders], KEEPFILTERS(Orders[Sentiment] = "Negative")), [Total Orders])
+		formatString: 0.0%
+		displayFolder: Customer Experience
+		lineageTag: d5300635-acc1-4c01-a744-147db8f8640e
+
+	/// Positive feedback % minus negative feedback %, in percentage points.
+	measure 'Net Sentiment Score' = [Positive Feedback %] - [Negative Feedback %]
+		formatString: +0.0%;-0.0%;0.0%
+		displayFolder: Customer Experience
+		lineageTag: 98041cdf-f4d7-4b0f-b0da-f42ea2ede98f
+
+	/// Products in the current filter context.
+	measure 'Product Count' = COUNTROWS(Product)
+		formatString: #,##0
+		displayFolder: Products
+		lineageTag: e79b5629-4764-44a0-8459-f93e68fb1610
+
+	/// Registered customers in the current filter context, whether or not they ordered.
+	measure 'Total Customers' = COUNTROWS(Customer)
+		displayFolder: Customers
+		lineageTag: 207fc9f0-9ebb-4a5d-b9d9-14ed6eb64299
+
+		formatStringDefinition =
+				-- Indian number system: crore (1,00,00,000) and lakh (1,00,000); the result is a literal format string
+				VAR _Value = SELECTEDMEASURE()
+				RETURN
+					SWITCH(
+						TRUE(),
+						ABS(_Value) >= 10000000, """" & FORMAT(_Value / 10000000, "0.00") & " Cr""",
+						ABS(_Value) >= 100000, """" & FORMAT(_Value / 100000, "0.00") & " L""",
+						"#,##0"
+					)
+
+	/// Customers whose first-ever order falls in the selected dates.
+	measure 'New Customers' = CALCULATE(COUNTROWS(Customer), TREATAS(VALUES('Date'[Date]), Customer[First Order Date]))
+		displayFolder: Customers
+		lineageTag: b5629f9b-e5cd-4929-a6a0-3673c3fd34bd
+
+		formatStringDefinition =
+				-- Indian number system: crore (1,00,00,000) and lakh (1,00,000); the result is a literal format string
+				VAR _Value = SELECTEDMEASURE()
+				RETURN
+					SWITCH(
+						TRUE(),
+						ABS(_Value) >= 10000000, """" & FORMAT(_Value / 10000000, "0.00") & " Cr""",
+						ABS(_Value) >= 100000, """" & FORMAT(_Value / 100000, "0.00") & " L""",
+						"#,##0"
+					)
+
+	/// Total campaign spend (INR).
+	measure 'Ad Spend' = SUM(Marketing[Spend])
+		displayFolder: Marketing
+		lineageTag: a1795eb4-3f57-4167-ae58-2bfbd52c8e09
+
+		formatStringDefinition =
+				-- Indian number system: crore (1,00,00,000) and lakh (1,00,000); the result is a literal format string
+				VAR _Value = SELECTEDMEASURE()
+				RETURN
+					SWITCH(
+						TRUE(),
+						ABS(_Value) >= 10000000, """₹" & FORMAT(_Value / 10000000, "0.00") & " Cr""",
+						ABS(_Value) >= 100000, """₹" & FORMAT(_Value / 100000, "0.00") & " L""",
+						"₹#,##0"
+					)
+
+	/// Revenue attributed to campaigns by the source (INR).
+	measure 'Campaign Revenue' = SUM(Marketing[Revenue Generated])
+		displayFolder: Marketing
+		lineageTag: 42f8a4f2-223f-448f-9780-af8508bd2312
+
+		formatStringDefinition =
+				-- Indian number system: crore (1,00,00,000) and lakh (1,00,000); the result is a literal format string
+				VAR _Value = SELECTEDMEASURE()
+				RETURN
+					SWITCH(
+						TRUE(),
+						ABS(_Value) >= 10000000, """₹" & FORMAT(_Value / 10000000, "0.00") & " Cr""",
+						ABS(_Value) >= 100000, """₹" & FORMAT(_Value / 100000, "0.00") & " L""",
+						"₹#,##0"
+					)
+
+	/// Return on ad spend: campaign revenue divided by ad spend.
+	measure ROAS = DIVIDE([Campaign Revenue], [Ad Spend])
+		formatString: 0.00"x"
+		displayFolder: Marketing
+		lineageTag: 08ba2395-b0d2-4643-bb7e-cddc1b9cf8eb
+
+	measure 'Total Impressions' = SUM(Marketing[Impressions])
+		displayFolder: Marketing
+		lineageTag: 86216998-fd11-416c-9c01-97dad8b45c57
+
+		formatStringDefinition =
+				-- Indian number system: crore (1,00,00,000) and lakh (1,00,000); the result is a literal format string
+				VAR _Value = SELECTEDMEASURE()
+				RETURN
+					SWITCH(
+						TRUE(),
+						ABS(_Value) >= 10000000, """" & FORMAT(_Value / 10000000, "0.00") & " Cr""",
+						ABS(_Value) >= 100000, """" & FORMAT(_Value / 100000, "0.00") & " L""",
+						"#,##0"
+					)
+
+	measure 'Total Clicks' = SUM(Marketing[Clicks])
+		displayFolder: Marketing
+		lineageTag: 5563c598-6e28-44b0-b593-2a623e51e7be
+
+		formatStringDefinition =
+				-- Indian number system: crore (1,00,00,000) and lakh (1,00,000); the result is a literal format string
+				VAR _Value = SELECTEDMEASURE()
+				RETURN
+					SWITCH(
+						TRUE(),
+						ABS(_Value) >= 10000000, """" & FORMAT(_Value / 10000000, "0.00") & " Cr""",
+						ABS(_Value) >= 100000, """" & FORMAT(_Value / 100000, "0.00") & " L""",
+						"#,##0"
+					)
+
+	measure 'Total Conversions' = SUM(Marketing[Conversions])
+		displayFolder: Marketing
+		lineageTag: a6aa2b98-5d5d-46b8-8494-fac5206a9996
+
+		formatStringDefinition =
+				-- Indian number system: crore (1,00,00,000) and lakh (1,00,000); the result is a literal format string
+				VAR _Value = SELECTEDMEASURE()
+				RETURN
+					SWITCH(
+						TRUE(),
+						ABS(_Value) >= 10000000, """" & FORMAT(_Value / 10000000, "0.00") & " Cr""",
+						ABS(_Value) >= 100000, """" & FORMAT(_Value / 100000, "0.00") & " L""",
+						"#,##0"
+					)
+
+	/// Click-through rate: clicks divided by impressions.
+	measure 'CTR %' = DIVIDE([Total Clicks], [Total Impressions])
+		formatString: 0.0%
+		displayFolder: Marketing
+		lineageTag: 6b5d458c-e71c-4b02-b88b-b46b5088e316
+
+	/// Conversions divided by clicks.
+	measure 'Conversion Rate %' = DIVIDE([Total Conversions], [Total Clicks])
+		formatString: 0.0%
+		displayFolder: Marketing
+		lineageTag: d2f545dd-90e2-4508-a982-58e67021c540
+
+	/// Ad spend divided by conversions (INR).
+	measure 'Cost per Conversion' = DIVIDE([Ad Spend], [Total Conversions])
+		formatString: ₹#,##0.00
+		displayFolder: Marketing
+		lineageTag: 3cdcf4b1-3229-45a4-8705-5078dfb64a96
+
+	/// Units received into stock.
+	measure 'Stock Received' = SUM(Inventory[Units Received])
+		displayFolder: Inventory
+		lineageTag: 1295ac2d-0568-44ad-bfc4-67f9fb03d58e
+
+		formatStringDefinition =
+				-- Indian number system: crore (1,00,00,000) and lakh (1,00,000); the result is a literal format string
+				VAR _Value = SELECTEDMEASURE()
+				RETURN
+					SWITCH(
+						TRUE(),
+						ABS(_Value) >= 10000000, """" & FORMAT(_Value / 10000000, "0.00") & " Cr""",
+						ABS(_Value) >= 100000, """" & FORMAT(_Value / 100000, "0.00") & " L""",
+						"#,##0"
+					)
+
+	/// Units written off as damaged.
+	measure 'Damaged Stock' = SUM(Inventory[Units Damaged])
+		displayFolder: Inventory
+		lineageTag: adc31f08-61f7-44e0-8b94-659da44af60e
+
+		formatStringDefinition =
+				-- Indian number system: crore (1,00,00,000) and lakh (1,00,000); the result is a literal format string
+				VAR _Value = SELECTEDMEASURE()
+				RETURN
+					SWITCH(
+						TRUE(),
+						ABS(_Value) >= 10000000, """" & FORMAT(_Value / 10000000, "0.00") & " Cr""",
+						ABS(_Value) >= 100000, """" & FORMAT(_Value / 100000, "0.00") & " L""",
+						"#,##0"
+					)
+
+	/// Damaged units as a share of units received.
+	measure 'Damage Rate %' = DIVIDE([Damaged Stock], [Stock Received])
+		formatString: 0.0%
+		displayFolder: Inventory
+		lineageTag: 575230eb-513e-4fca-9233-5ee9ed46857c
+
+	column Column
+		dataType: string
+		isHidden
+		lineageTag: 1dcbb0b3-81c2-4645-956e-023b35994887
+		summarizeBy: none
+		sourceColumn: Column
+
+	partition _Measures = m
+		mode: import
+		source =
+				let
+					Source = #table(type table [Column = text], {})
+				in
+					Source
+

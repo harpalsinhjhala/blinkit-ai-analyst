@@ -1,0 +1,6 @@
+/// Where the clean CSVs live: the Data/clean folder of the public blinkit-pulse-analytics repo (public, so Power BI Service refreshes with no gateway). Must end with a slash.
+expression DataFolder = "https://raw.githubusercontent.com/harpalsinhjhala/blinkit-pulse-analytics/main/Data/clean/" meta [IsParameterQuery=true, Type="Text", IsParameterQueryRequired=true]
+	lineageTag: 821f0e2d-4d00-4623-ba2d-957b2f2c0649
+
+	annotation PBI_ResultType = Text
+

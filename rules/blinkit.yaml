@@ -1,0 +1,117 @@
+# Rules for the Blinkit Pulse model (quick-commerce analytics).
+# Optional: without it the MCP server reads the model by itself. With it, Jhala AI gets an exact menu,
+# business meanings and warnings. Picked up automatically because 'model' matches the semantic model's name.
+
+model: Blinkit Pulse
+title: Blinkit Pulse
+assistant: >-
+  Jhala AI, a quick-commerce analytics assistant built by Harpal Sinh Jhala. You answer questions about the
+  Blinkit Pulse Power BI model (public synthetic Blinkit sample data: 5,000 orders, Mar 2023 to Nov 2024;
+  amounts in Indian rupees)
+greeting: >-
+  Hi, I'm **Jhala AI**. Ask me about GMV, orders, delivery speed, ratings, customers or marketing ROAS,
+  or ask for a chart. Every number comes live from the same Power BI model as the dashboard.
+suggestions:
+  - What is the total GMV and average order value?
+  - "Chart: GMV by category, highest first"
+  - On-time delivery % by time of day
+  - Which city has the most orders?
+  - "Chart: monthly GMV trend as a line"
+  - ROAS and ad spend by marketing channel
+  - Average rating by feedback category
+
+# The menu. format: inr (₹ L / Cr), pct, count, ratio (1.97x), decimal, or auto.
+measures:
+  GMV: {format: inr, description: "Gross merchandise value: billed order total (also called sales / revenue)."}
+  Total Orders: {format: count, description: "Number of orders."}
+  Average Order Value: {format: inr, description: "GMV / orders (AOV)."}
+  Units Sold: {format: count, description: "Quantity of items sold."}
+  Gross Margin: {format: inr, description: "Gross margin amount in rupees."}
+  Gross Margin %: {format: pct, description: "Gross margin / GMV."}
+  GMV PM: {format: inr, description: "GMV of the previous month (use with Month Year)."}
+  GMV MoM %: {format: pct, description: "GMV change vs previous month (use with Month Year)."}
+  GMV PY: {format: inr, description: "GMV of the same period last year."}
+  GMV YoY %: {format: pct, description: "GMV change vs same period last year."}
+  Orders MoM %: {format: pct, description: "Order count change vs previous month (use with Month Year)."}
+  Active Customers: {format: count, description: "Distinct customers who ordered in the period."}
+  Total Customers: {format: count, description: "All registered customers."}
+  New Customers: {format: count, description: "Customers whose first order falls in the period."}
+  Repeat Customers: {format: count, description: "Customers with more than one order."}
+  Repeat Customer Rate: {format: pct, description: "Repeat customers / active customers."}
+  Orders per Customer: {format: decimal, description: "Orders / active customers."}
+  On-Time Delivery %: {format: pct, description: "Share of orders delivered by the promised time."}
+  Delayed Orders: {format: count, description: "Orders delivered late (slightly or significantly)."}
+  Delayed Order %: {format: pct, description: "Delayed orders / all orders."}
+  Avg Delivery Time (min): {format: decimal, description: "Average actual delivery time in minutes."}
+  Avg Promised Time (min): {format: decimal, description: "Average promised delivery time in minutes."}
+  Avg Delay When Late (min): {format: decimal, description: "Average minutes late, for late orders only."}
+  Delivered Within 15 Min %: {format: pct, description: "Share of orders delivered within 15 minutes (the brand promise)."}
+  Avg Distance (km): {format: decimal, description: "Average delivery distance."}
+  Average Rating: {format: decimal, description: "Average customer rating, 1 to 5."}
+  CSAT %: {format: pct, description: "Share of orders rated 4 or 5 stars."}
+  Positive Feedback %: {format: pct, description: "Share of feedback with positive sentiment."}
+  Negative Feedback %: {format: pct, description: "Share of feedback with negative sentiment."}
+  Net Sentiment Score: {format: pct, description: "Positive % minus negative %."}
+  Product Count: {format: count, description: "Number of products."}
+  Ad Spend: {format: inr, description: "Marketing spend."}
+  Campaign Revenue: {format: inr, description: "Revenue attributed to marketing campaigns."}
+  ROAS: {format: ratio, description: "Return on ad spend = campaign revenue / ad spend."}
+  Total Impressions: {format: count, description: "Ad impressions."}
+  Total Clicks: {format: count, description: "Ad clicks."}
+  Total Conversions: {format: count, description: "Ad conversions."}
+  CTR %: {format: pct, description: "Clicks / impressions."}
+  Conversion Rate %: {format: pct, description: "Conversions / clicks."}
+  Cost per Conversion: {format: inr, description: "Ad spend / conversions."}
+  Stock Received: {format: count, description: "Inventory units received."}
+  Damaged Stock: {format: count, description: "Inventory units damaged."}
+  Damage Rate %: {format: pct, description: "Damaged / received units (synthetic data: unusually high)."}
+
+fields:
+  Year: {column: "Date[Year]"}
+  Quarter: {column: "Date[Quarter]"}
+  Month: {column: "Date[Month]", note: "month name across all years; use Month Year for a timeline"}
+  Month Year: {column: "Date[Month Year]", note: "e.g. 'Mar 2024'; use for monthly trends"}
+  Day of Week: {column: "Date[Day of Week]"}
+  Day Type: {column: "Date[Day Type]", note: "Weekday / Weekend"}
+  Category: {column: "Product[Category]"}
+  Brand: {column: "Product[Brand]"}
+  Product: {column: "Product[Product Name]"}
+  City: {column: "Customer[City]"}
+  Customer Segment: {column: "Customer[Customer Segment]"}
+  Time of Day: {column: "Orders[Day Part]", note: "Late Night (0-5), Morning (6-11), Afternoon (12-16), Evening (17-20), Night (21-23)"}
+  Order Hour: {column: "Orders[Order Hour]"}
+  Payment Method: {column: "Orders[Payment Method]"}
+  Delivery Status: {column: "Orders[Delivery Status]"}
+  Delivery Time Band: {column: "Orders[Delivery Time Band]"}
+  Delay Reason: {column: "Orders[Delay Reason]", note: "delayed orders only"}
+  Rating: {column: "Orders[Rating]"}
+  Feedback Category: {column: "Orders[Feedback Category]"}
+  Sentiment: {column: "Orders[Sentiment]"}
+  Campaign: {column: "Marketing[Campaign Name]", note: "marketing KPIs only"}
+  Channel: {column: "Marketing[Channel]", note: "marketing channel; marketing KPIs only"}
+  Target Audience: {column: "Marketing[Target Audience]", note: "marketing KPIs only"}
+
+warnings:
+  - fields: [Category, Brand, Product, City, Customer Segment, Time of Day, Order Hour, Payment Method,
+             Delivery Status, Delivery Time Band, Delay Reason, Rating, Feedback Category, Sentiment]
+    measures: [Ad Spend, Campaign Revenue, ROAS, Total Impressions, Total Clicks, Total Conversions, CTR %,
+               Conversion Rate %, Cost per Conversion]
+    message: >-
+      Marketing data is not linked to {field}, so {measures} shows the same overall total on every row.
+  - fields: [Campaign, Channel, Target Audience]
+    measures: [GMV, Total Orders, Average Order Value, Units Sold, Gross Margin, Gross Margin %, Active Customers,
+               On-Time Delivery %, Average Rating, CSAT %]
+    message: >-
+      Orders are not linked to {field}, so {measures} shows the same overall total on every row.
+
+prompt_notes:
+  - "Sales, revenue or turnover means GMV. AOV means Average Order Value. 'How many orders' means Total Orders."
+  - "For monthly trends group by Month Year (not Month). Mar 2023 and Nov 2024 are partial months: mention it."
+  - "Marketing KPIs split only by Campaign, Channel, Target Audience and the date fields."
+  - "The data is public synthetic sample data, not real Blinkit figures. Say so if asked about Blinkit's real business."
+  - "If asked who built you or this project: Harpal Sinh Jhala, a data analyst and Power BI developer."
+
+fallback_tables: [Orders, Product, Customer, Date, Marketing, Inventory]
+run_dax_notes: >-
+  Prefer measures in [brackets], e.g. EVALUATE SUMMARIZECOLUMNS('Date'[Year], "GMV", [GMV]).
+  Orders is linked to Date (order date), Product and Customer; Marketing and Inventory are linked to Date.

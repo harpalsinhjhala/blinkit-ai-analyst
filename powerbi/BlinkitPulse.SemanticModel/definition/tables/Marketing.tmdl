@@ -1,0 +1,95 @@
+/// Daily campaign performance: one row per campaign per day (9 campaigns, 4 channels). Not linked to individual orders.
+table Marketing
+	lineageTag: fa52b4fa-ac63-4687-af56-30a13f11be9a
+
+	column 'Campaign ID'
+		dataType: int64
+		isHidden
+		lineageTag: 5ba5e61e-2561-4667-a226-272bf7ac425e
+		summarizeBy: none
+		sourceColumn: campaign_id
+
+	column 'Campaign Name'
+		dataType: string
+		lineageTag: 280cdb12-c928-4154-b691-f298618e57fa
+		summarizeBy: none
+		sourceColumn: campaign_name
+
+	column Date
+		dataType: dateTime
+		isHidden
+		formatString: dd mmm yyyy
+		lineageTag: a949f455-b22b-4ea1-a6fc-491a24245642
+		summarizeBy: none
+		sourceColumn: date
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	/// Audience targeted: New Users, Premium, Inactive or All.
+	column 'Target Audience'
+		dataType: string
+		lineageTag: c9cf3739-b744-45dc-a735-e2e32ca1fb64
+		summarizeBy: none
+		sourceColumn: target_audience
+
+	column Channel
+		dataType: string
+		lineageTag: 6efbbf1f-1af2-4ee1-b7a2-8ff28bf8254e
+		summarizeBy: none
+		sourceColumn: channel
+
+	column Impressions
+		dataType: int64
+		isHidden
+		lineageTag: 6bc4bc82-3a46-4f61-9991-88f2cbfa901d
+		summarizeBy: none
+		sourceColumn: impressions
+
+	column Clicks
+		dataType: int64
+		isHidden
+		lineageTag: f2e0c04e-753a-410c-b25f-6f158b1daf86
+		summarizeBy: none
+		sourceColumn: clicks
+
+	column Conversions
+		dataType: int64
+		isHidden
+		lineageTag: 5a79641a-8911-4275-8d94-afb3fcdfc547
+		summarizeBy: none
+		sourceColumn: conversions
+
+	column Spend
+		dataType: decimal
+		isHidden
+		lineageTag: 4aa54cb8-130b-4bb5-9f72-9066666cdb9a
+		summarizeBy: none
+		sourceColumn: spend
+
+	column 'Revenue Generated'
+		dataType: decimal
+		isHidden
+		lineageTag: b9f90422-5fd6-48a0-b7f9-117f32f99090
+		summarizeBy: none
+		sourceColumn: revenue_generated
+
+	partition Marketing = m
+		mode: import
+		source =
+				let
+					Source = Csv.Document(Web.Contents(DataFolder & "fact_marketing.csv"), [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
+					Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+					Selected = Table.SelectColumns(Promoted, {"campaign_id", "campaign_name", "date", "target_audience", "channel", "impressions", "clicks", "conversions", "spend", "revenue_generated"}),
+					Typed = Table.TransformColumnTypes(
+						Selected,
+						{
+							{"campaign_id", Int64.Type}, {"campaign_name", type text}, {"date", type date},
+							{"target_audience", type text}, {"channel", type text},
+							{"impressions", Int64.Type}, {"clicks", Int64.Type}, {"conversions", Int64.Type},
+							{"spend", Currency.Type}, {"revenue_generated", Currency.Type}
+						},
+						"en-US"
+					)
+				in
+					Typed
+

@@ -1,0 +1,429 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Jhala AI · Blinkit Pulse</title>
+<meta name="description" content="Jhala AI by Harpal Sinh Jhala: ask a Blinkit quick-commerce Power BI dashboard questions in plain English.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230c6b1f'/%3E%3Ctext x='16' y='22' font-family='Segoe UI,Arial' font-size='15' font-weight='700' fill='%23f8cb46' text-anchor='middle'%3EJA%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.2/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.1.6/purify.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/plotly.js-dist-min@2.35.2/plotly.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/powerbi-client@2.23.1/dist/powerbi.min.js"></script>
+<style>
+  :root {
+    --green: #0c6b1f; --green-2: #0f8a28; --green-soft: #e8f5ea; --yellow: #f8cb46; --yellow-soft: #fff6d6;
+    --bg: #f4f6f3; --panel: #ffffff; --text: #17201a; --muted: #66706a; --line: #e2e7e2;
+    --shadow: 0 1px 2px rgba(16,24,16,.05), 0 6px 24px rgba(16,24,16,.06);
+    --radius: 14px;
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body { margin: 0; font: 14px/1.5 Inter, "Segoe UI", system-ui, sans-serif; background: var(--bg); color: var(--text);
+         display: flex; flex-direction: column; height: 100vh; }
+  a { color: inherit; }
+
+  /* ---------- header ---------- */
+  header { display: flex; align-items: center; gap: 14px; padding: 10px 18px; background: var(--panel);
+           border-bottom: 1px solid var(--line); }
+  .mark { width: 36px; height: 36px; border-radius: 10px; background: var(--green); color: var(--yellow);
+          display: grid; place-items: center; font-weight: 700; font-size: 14px; letter-spacing: .5px; flex: none; }
+  .brand h1 { margin: 0; font-size: 16px; font-weight: 700; letter-spacing: -.01em; }
+  .brand p { margin: 0; font-size: 12px; color: var(--muted); }
+  .brand p b { color: var(--text); font-weight: 600; }
+  .head-links { margin-left: auto; display: flex; gap: 8px; align-items: center; }
+  .pill { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 500; text-decoration: none;
+          padding: 6px 11px; border-radius: 99px; border: 1px solid var(--line); background: #fff; color: var(--text); }
+  .pill:hover { border-color: var(--green); color: var(--green); }
+  .pill svg { width: 14px; height: 14px; }
+
+  /* ---------- layout ---------- */
+  main { flex: 1; display: flex; padding: 14px; min-height: 0; }
+  .report { flex: 1; min-width: 240px; background: var(--panel); border-radius: var(--radius); overflow: hidden;
+            border: 1px solid var(--line); box-shadow: var(--shadow); position: relative; }
+  .report iframe { width: 100%; height: 100%; border: 0; }
+  .report-loading { position: absolute; inset: 0; display: flex; flex-direction: column; gap: 12px; align-items: center;
+                    justify-content: center; color: var(--muted); font-size: 13px; z-index: 1; background: var(--panel); }
+  .report-loading::before { content: ""; width: 28px; height: 28px; border-radius: 50%; border: 3px solid var(--green-soft);
+                            border-top-color: var(--green); animation: spin .9s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .splitter { flex: 0 0 14px; cursor: col-resize; display: flex; align-items: center; justify-content: center;
+              touch-action: none; outline: none; }
+  .splitter::before { content: ""; width: 4px; height: 44px; border-radius: 4px; background: #cfd8cf; transition: height .15s, background .15s; }
+  .splitter:hover::before, .splitter:focus-visible::before, .splitter.dragging::before { background: var(--green); height: 80px; }
+  body.resizing { cursor: col-resize; user-select: none; }
+  body.resizing .report * { pointer-events: none; }
+
+  /* ---------- chat ---------- */
+  .chat { flex: 0 0 32%; min-width: 320px; display: flex; flex-direction: column; background: var(--panel);
+          border-radius: var(--radius); border: 1px solid var(--line); box-shadow: var(--shadow); min-height: 0; overflow: hidden; }
+  .chat-head { display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-bottom: 1px solid var(--line);
+               background: linear-gradient(180deg, var(--green-soft), #fff); }
+  .avatar { width: 34px; height: 34px; border-radius: 50%; background: var(--green); color: var(--yellow);
+            display: grid; place-items: center; font-weight: 700; font-size: 13px; flex: none; }
+  .avatar.sm { width: 26px; height: 26px; font-size: 10px; }
+  .chat-head .who b { display: block; font-size: 15px; }
+  .chat-head .who { min-width: 0; overflow: hidden; }
+  .chat-head .who #status { overflow: hidden; text-overflow: ellipsis; display: inline-block; min-width: 0; }
+  .chat-head .who span { white-space: nowrap; font-size: 12px; color: var(--muted); display: inline-flex; align-items: center; gap: 6px; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: #b9c2bb; }
+  .dot.ok { background: #22a447; box-shadow: 0 0 0 3px rgba(34,164,71,.18); }
+  .dot.bad { background: #d64545; }
+  .icon-btn { margin-left: auto; border: 1px solid var(--line); background: #fff; border-radius: 8px; padding: 6px 10px;
+              font: 500 12px Inter, sans-serif; color: var(--muted); cursor: pointer; display: inline-flex; gap: 6px; align-items: center; white-space: nowrap; flex: none; }
+  .icon-btn:hover { color: var(--green); border-color: var(--green); }
+
+  #log { flex: 1; overflow-y: auto; padding: 16px 14px; display: flex; flex-direction: column; gap: 14px; }
+  .row { display: flex; gap: 8px; align-items: flex-start; animation: rise .22s ease-out; }
+  .row.user { justify-content: flex-end; }
+  @keyframes rise { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+  .msg { max-width: 88%; padding: 10px 13px; border-radius: 14px; line-height: 1.5; overflow-wrap: anywhere; min-width: 0; }
+  .row.user .msg { background: var(--green); color: #fff; border-bottom-right-radius: 4px; }
+  .row.bot .msg { background: #f6f8f6; border: 1px solid var(--line); border-top-left-radius: 4px; }
+  .row.bot.wide .msg { flex: 1; max-width: calc(100% - 34px); }
+  .msg p { margin: 4px 0; }
+  .msg ul, .msg ol { margin: 4px 0; padding-left: 20px; }
+  .msg blockquote { margin: 4px 0 8px; padding: 6px 10px; background: var(--yellow-soft); border-left: 3px solid var(--yellow);
+                    border-radius: 6px; font-size: 12.5px; }
+  .msg blockquote p { margin: 0; }
+  .msg table { border-collapse: collapse; margin: 8px 0; font-size: 13px; width: 100%; background: #fff; }
+  .msg th, .msg td { border-bottom: 1px solid var(--line); padding: 6px 9px; text-align: left; }
+  .msg th { background: var(--green-soft); font-weight: 600; color: var(--green); }
+  .msg td:not(:first-child), .msg th:not(:first-child) { text-align: right; font-variant-numeric: tabular-nums; }
+  .chart { width: 100%; height: 290px; margin: 2px 0 8px; background: #fff; border: 1px solid var(--line); border-radius: 10px; }
+
+  .meta { display: flex; align-items: center; gap: 10px; margin-top: 8px; font-size: 11.5px; color: var(--muted); }
+  .meta button { background: none; border: 0; padding: 0; color: var(--muted); cursor: pointer; font: inherit; }
+  .meta button:hover { color: var(--green); }
+  details.trace { margin-top: 4px; font-size: 11.5px; color: var(--muted); }
+  details.trace summary { cursor: pointer; list-style: none; display: inline-flex; gap: 5px; align-items: center; }
+  details.trace summary::-webkit-details-marker { display: none; }
+  details.trace summary::before { content: "▸"; transition: transform .15s; }
+  details.trace[open] summary::before { transform: rotate(90deg); }
+  details.trace code { display: block; margin-top: 4px; padding: 5px 8px; background: #fff; border: 1px solid var(--line);
+                       border-radius: 6px; font: 11px/1.45 Consolas, monospace; color: #33433a; white-space: pre-wrap; }
+  details.trace code.err { border-color: #f3c4c4; color: #b42318; }
+
+  .suggest { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 10px; }
+  .suggest button { text-align: left; font: 500 12.5px/1.35 Inter, sans-serif; color: var(--text); background: #fff;
+                    border: 1px solid var(--line); border-radius: 10px; padding: 8px 10px; cursor: pointer; }
+  .suggest button:hover { border-color: var(--green); background: var(--green-soft); }
+
+  .typing { display: inline-flex; align-items: center; gap: 5px; color: var(--muted); font-size: 13px; }
+  .typing i { width: 6px; height: 6px; border-radius: 50%; background: var(--green); display: inline-block; animation: blink 1.2s infinite; }
+  .typing i:nth-child(2) { animation-delay: .2s; } .typing i:nth-child(3) { animation-delay: .4s; }
+  .typing span { margin-left: 4px; }
+  @keyframes blink { 0%, 80%, 100% { opacity: .25; } 40% { opacity: 1; } }
+
+  .chips { display: flex; gap: 6px; overflow-x: auto; padding: 8px 14px 0; scrollbar-width: none; }
+  .chips:empty { display: none; }
+  .chips::-webkit-scrollbar { display: none; }
+  .chips button { flex: none; font: 500 12px Inter, sans-serif; border: 1px solid var(--line); background: #fff; color: var(--green);
+                  padding: 5px 10px; border-radius: 99px; cursor: pointer; white-space: nowrap; }
+  .chips button:hover { background: var(--green-soft); }
+  .composer { padding: 10px 14px 12px; }
+  .box { display: flex; align-items: flex-end; gap: 8px; border: 1px solid var(--line); border-radius: 12px; padding: 6px 6px 6px 12px;
+         background: #fff; transition: border-color .15s, box-shadow .15s; }
+  .box:focus-within { border-color: var(--green); box-shadow: 0 0 0 3px rgba(12,107,31,.12); }
+  textarea { flex: 1; border: 0; outline: none; resize: none; font: 14px/1.45 Inter, sans-serif; padding: 7px 0; max-height: 120px; overflow-y: hidden;
+             color: var(--text); background: transparent; }
+  .send { width: 36px; height: 36px; border-radius: 10px; border: 0; background: var(--green); color: #fff; cursor: pointer;
+          display: grid; place-items: center; flex: none; }
+  .send:hover { background: var(--green-2); }
+  .send:disabled { opacity: .4; cursor: default; }
+  .foot { font-size: 11px; color: var(--muted); text-align: center; margin-top: 7px; }
+
+  /* ---------- mobile: tabs instead of side by side ---------- */
+  .tabs { display: none; }
+  @media (max-width: 900px) {
+    header { padding: 10px 16px; }
+    .head-links .pill span { display: none; }
+    main { padding: 10px 16px 16px; flex-direction: column; }
+    .tabs { display: flex; gap: 4px; margin: 10px 16px 0; padding: 4px; background: #e6ebe6; border-radius: 10px; }
+    .tabs button { flex: 1; border: 0; background: transparent; padding: 7px; border-radius: 7px; font: 600 13px Inter, sans-serif;
+                   color: var(--muted); cursor: pointer; }
+    .tabs button.on { background: #fff; color: var(--green); box-shadow: var(--shadow); }
+    .splitter { display: none; }
+    .chat, .report { flex: 1 !important; min-width: 0; }
+    body[data-tab="chat"] .report, body[data-tab="report"] .chat { display: none; }
+    .suggest { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body data-tab="chat">
+<header>
+  <div class="mark" aria-hidden="true">JA</div>
+  <div class="brand">
+    <h1 id="title">Blinkit Pulse</h1>
+    <p>AI analytics by <b>Harpal Sinh Jhala</b></p>
+  </div>
+  <nav class="head-links">
+    <a class="pill" href="https://github.com/harpalsinhjhala/blinkit-ai-analyst" target="_blank" rel="noopener" title="Source code on GitHub">
+      <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+      <span>Source</span>
+    </a>
+  </nav>
+</header>
+<div class="tabs" role="tablist">
+  <button type="button" data-tab="chat" class="on">Ask Jhala AI</button>
+  <button type="button" data-tab="report">Dashboard</button>
+</div>
+<main>
+  <section class="report" id="report">
+    <div class="report-loading" id="report-loading">Loading the Power BI dashboard…</div>
+    <iframe title="Power BI report" src="{{REPORT_EMBED_URL}}" allowfullscreen></iframe>
+  </section>
+  <script>
+  // Embed the report with a view-only token made by the server, so visitors don't sign in
+  (function () {
+    const box = document.getElementById("report"), frame = box.querySelector("iframe"),
+          loading = document.getElementById("report-loading");
+    if (frame.getAttribute("src")) { loading.remove(); return; }
+    frame.remove();
+    const pbi = window["powerbi-client"];
+    let report;
+    async function load() {
+      const cfg = await fetch("/api/embed").then(r => r.json()).catch(e => ({error: String(e)}));
+      if (cfg.error) { loading.textContent = "The dashboard could not load: " + cfg.error; return; }
+      if (report) { await report.setAccessToken(cfg.token); }
+      else {
+        report = powerbi.embed(box, {
+          type: "report", tokenType: pbi.models.TokenType.Embed, accessToken: cfg.token,
+          embedUrl: cfg.embedUrl, id: cfg.reportId,
+          settings: { panes: { filters: { visible: false }, pageNavigation: { visible: true } } },
+        });
+        report.on("loaded", () => loading.remove());
+      }
+      const ms = new Date(cfg.expiration) - Date.now() - 5 * 60 * 1000;  // renew 5 min before expiry
+      setTimeout(load, Math.max(ms, 60 * 1000));
+    }
+    load();
+  })();
+  </script>
+  <div class="splitter" id="splitter" role="separator" aria-orientation="vertical" tabindex="0"
+       aria-label="Drag to resize the dashboard and chat (double-click to reset)" title="Drag to resize · double-click to reset"></div>
+  <section class="chat" aria-label="Jhala AI chat">
+    <div class="chat-head">
+      <div class="avatar" aria-hidden="true">J</div>
+      <div class="who">
+        <b>Jhala AI</b>
+        <span><i class="dot" id="dot"></i><span id="status">Connecting…</span></span>
+      </div>
+      <button type="button" class="icon-btn" id="reset" title="Start a new conversation">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>
+        New chat
+      </button>
+    </div>
+    <div id="log" aria-live="polite"></div>
+    <div class="chips" id="chips"></div>
+    <form class="composer" id="form">
+      <div class="box">
+        <textarea id="q" rows="1" placeholder="Ask Jhala AI about the data…" aria-label="Your question"></textarea>
+        <button class="send" id="send" title="Send (Enter)" aria-label="Send">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </button>
+      </div>
+      <div class="foot">Live from the Power BI model via an MCP server · Public synthetic data, not affiliated with Blinkit</div>
+    </form>
+  </section>
+</main>
+<script>
+  const log = document.getElementById("log"), form = document.getElementById("form"),
+        q = document.getElementById("q"), send = document.getElementById("send"), chips = document.getElementById("chips");
+  let history = [], model = {}, busy = false;
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"}[c]));
+  const md = s => DOMPurify.sanitize(marked.parse(s || ""));
+
+  // ---------- charts ----------
+  const COLORS = ["#0c6b1f", "#e0a800", "#3b82c4", "#d9622b", "#7c4dbd", "#2aa198", "#8a8f8b"];
+  function drawChart(parent, c, before) {
+    const el = document.createElement("div");
+    el.className = "chart";
+    parent.insertBefore(el, before || null);
+    const fmt = s => s.pct ? "%{y:.1%}" : s.inr ? "₹%{y:,.0f}" : "%{y:,.2~f}";
+    let traces;
+    if (c.type === "pie") {
+      const s = c.series[0];
+      traces = [{type: "pie", labels: c.x, values: s.values, hole: .5, sort: false, marker: {colors: COLORS},
+                 textinfo: "percent", hovertemplate: "%{label}: " + (s.inr ? "₹%{value:,.0f}" : "%{value:,.2~f}") + "<extra></extra>"}];
+    } else {
+      const mixed = c.series.some(s => s.pct) && c.series.some(s => !s.pct);  // % gets its own right axis
+      traces = c.series.map((s, i) => ({
+        type: c.type === "line" || (mixed && s.pct) ? "scatter" : "bar", mode: "lines+markers", name: s.name,
+        x: c.x, y: s.values, yaxis: mixed && s.pct ? "y2" : "y",
+        marker: {color: COLORS[i % COLORS.length]}, line: {width: 2.5},
+        hovertemplate: fmt(s) + "<extra>" + esc(s.name) + "</extra>"}));
+    }
+    const usesY2 = traces.some(t => t.yaxis === "y2"), allPct = c.series.every(s => s.pct),
+          anyInr = c.series.some(s => s.inr && !s.pct);
+    Plotly.newPlot(el, traces, {
+      title: {text: c.title, font: {size: 13, family: "Inter, sans-serif", color: "#17201a"}, x: 0.03},
+      margin: {l: 56, r: usesY2 ? 50 : 16, t: 40, b: 56}, paper_bgcolor: "#fff", plot_bgcolor: "#fff",
+      font: {family: "Inter, Segoe UI, sans-serif", size: 11, color: "#4a554d"},
+      showlegend: c.series.length > 1 || c.type === "pie",
+      legend: {orientation: "h", y: -0.25, title: {text: c.legend_title ? c.legend_title + ": " : ""}},
+      barmode: c.stacked ? "stack" : "group", bargap: .3, xaxis: {type: "category", automargin: true},
+      yaxis: {tickformat: allPct ? ".0%" : "~s", tickprefix: anyInr ? "₹" : "", automargin: true, rangemode: "tozero",
+              gridcolor: "#eef1ee", title: {text: c.y_title || "", font: {size: 11}}},
+      yaxis2: {overlaying: "y", side: "right", tickformat: ".0%", showgrid: false, rangemode: "tozero"},
+    }, {displaylogo: false, responsive: true, modeBarButtonsToRemove: ["lasso2d", "select2d", "autoScale2d"]});
+  }
+
+  // ---------- messages ----------
+  function row(role, html, wide) {
+    const r = document.createElement("div");
+    r.className = "row " + role + (wide ? " wide" : "");
+    r.innerHTML = (role === "bot" ? '<div class="avatar sm" aria-hidden="true">J</div>' : "") + '<div class="msg"></div>';
+    r.querySelector(".msg").innerHTML = html;
+    log.appendChild(r);
+    log.scrollTop = log.scrollHeight;
+    return r;
+  }
+
+  function botAnswer(data) {
+    const charts = data.charts || [];
+    const r = row("bot", md(data.answer), charts.length > 0);
+    const msg = r.querySelector(".msg");
+    charts.forEach(c => drawChart(msg, c, msg.firstChild));  // after it is on the page, so Plotly can measure it
+    const meta = document.createElement("div");
+    meta.className = "meta";
+    const copy = document.createElement("button");
+    copy.type = "button"; copy.textContent = "Copy answer";
+    copy.onclick = () => navigator.clipboard.writeText(data.answer || "").then(() => {
+      copy.textContent = "Copied"; setTimeout(() => copy.textContent = "Copy answer", 1400); });
+    meta.appendChild(copy);
+    msg.appendChild(meta);
+    const trace = data.trace || [], calls = trace.filter(t => t.tool !== "show_chart");
+    if (trace.length) {
+      const d = document.createElement("details");
+      d.className = "trace";
+      d.innerHTML = `<summary>How I got this · ${calls.length} MCP quer${calls.length === 1 ? "y" : "ies"}</summary>`;
+      trace.forEach(t => {
+        const a = t.args && typeof t.args === "object"
+          ? Object.entries(t.args).map(([k, v]) => `${k}=${JSON.stringify(v)}`).join(", ") : (t.args || "");
+        const c = document.createElement("code");
+        if (!t.ok) c.className = "err";
+        c.textContent = `${t.tool}(${a})`;
+        d.appendChild(c);
+      });
+      msg.appendChild(d);
+    }
+    log.scrollTop = log.scrollHeight;
+  }
+
+  function suggestionButton(t) {
+    const b = document.createElement("button");
+    b.type = "button"; b.textContent = t; b.onclick = () => ask(t);
+    return b;
+  }
+
+  function welcome() {
+    log.innerHTML = "";
+    const r = row("bot", md(model.greeting || "Hi, I'm **Jhala AI**. Ask me anything about the dashboard."), true);
+    const s = model.suggestions || [];
+    if (s.length) {
+      const g = document.createElement("div");
+      g.className = "suggest";
+      s.slice(0, 4).forEach(t => g.appendChild(suggestionButton(t)));
+      r.querySelector(".msg").appendChild(g);
+    }
+    chips.innerHTML = "";
+    s.slice(4).forEach(t => chips.appendChild(suggestionButton(t)));
+  }
+
+  const STEPS = ["Reading the model…", "Querying Power BI…", "Crunching the numbers…", "Writing the answer…"];
+  async function ask(text) {
+    text = text.trim();
+    if (!text || busy) return;
+    busy = true; send.disabled = true;
+    row("user", esc(text));
+    history.push({role: "user", content: text});
+    q.value = ""; autosize();
+    const t = row("bot", '<span class="typing"><i></i><i></i><i></i><span>' + STEPS[0] + "</span></span>");
+    let step = 0;
+    const timer = setInterval(() => {
+      step = Math.min(step + 1, STEPS.length - 1);
+      t.querySelector(".typing span").textContent = STEPS[step];
+    }, 2500);
+    try {
+      const r = await fetch("/api/chat", {method: "POST", headers: {"Content-Type": "application/json"},
+                                          body: JSON.stringify({messages: history})});
+      const data = await r.json();
+      t.remove();
+      botAnswer(data);
+      history.push({role: "assistant", content: data.answer || ""});
+    } catch (e) {
+      t.remove();
+      row("bot", "⚠️ Could not reach the app: " + esc(e));
+    }
+    clearInterval(timer);
+    busy = false; send.disabled = false;
+    if (window.matchMedia("(min-width: 901px)").matches) q.focus();
+  }
+
+  function autosize() { q.style.height = "auto"; q.style.height = Math.min(q.scrollHeight, 120) + "px";
+                      q.style.overflowY = q.scrollHeight > 120 ? "auto" : "hidden"; }
+  q.addEventListener("input", autosize);
+  q.addEventListener("keydown", e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); ask(q.value); } });
+  form.addEventListener("submit", e => { e.preventDefault(); ask(q.value); });
+  document.getElementById("reset").addEventListener("click", () => { if (!busy) { history = []; welcome(); q.focus(); } });
+
+  // Title, greeting and suggestions come from the model (through the MCP server), not this page
+  fetch("/api/model").then(r => r.json()).then(m => {
+    model = m;
+    if (m.title) { document.getElementById("title").textContent = m.title; document.title = "Jhala AI · " + m.title; }
+    welcome();
+  }).catch(welcome);
+
+  fetch("/api/status").then(r => r.json()).then(s => {
+    const ok = s.llm_ready && s.mcp_tools.length;
+    document.getElementById("dot").className = "dot " + (ok ? "ok" : "bad");
+    document.getElementById("status").textContent = ok ? "Online · live Power BI data" : "AI key missing";
+    document.getElementById("status").title = `${s.mcp_tools.length} MCP tools · LLM ${s.model || "-"}`;
+  }).catch(() => { document.getElementById("dot").className = "dot bad"; document.getElementById("status").textContent = "Offline"; });
+
+  // ---------- mobile tabs ----------
+  document.querySelectorAll(".tabs button").forEach(b => b.addEventListener("click", () => {
+    document.body.dataset.tab = b.dataset.tab;
+    document.querySelectorAll(".tabs button").forEach(x => x.classList.toggle("on", x === b));
+    document.querySelectorAll(".chart").forEach(el => Plotly.Plots.resize(el));
+  }));
+
+  // ---------- drag to resize dashboard | chat ----------
+  (function () {
+    const main = document.querySelector("main"), chat = document.querySelector(".chat"), split = document.getElementById("splitter");
+    const DEFAULT = 32, MIN = 22, MAX = 70;
+    let raf = 0;
+    const resizeCharts = () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(() =>
+      document.querySelectorAll(".chart").forEach(el => Plotly.Plots.resize(el))); };
+    function setChat(pct, save) {
+      pct = Math.round(Math.min(MAX, Math.max(MIN, pct)));
+      chat.style.flexBasis = pct + "%";
+      if (save) { try { localStorage.setItem("jhalaChatPct", pct); } catch (e) {} }
+      resizeCharts();
+    }
+    const fromX = x => { const r = main.getBoundingClientRect(); return (r.right - 14 - x) / (r.width - 28) * 100; };
+    let saved = null;
+    try { saved = parseFloat(localStorage.getItem("jhalaChatPct")); } catch (e) {}
+    setChat(Number.isFinite(saved) ? saved : DEFAULT, false);
+    split.addEventListener("pointerdown", e => { e.preventDefault(); split.setPointerCapture(e.pointerId);
+      split.classList.add("dragging"); document.body.classList.add("resizing"); });
+    split.addEventListener("pointermove", e => { if (split.classList.contains("dragging")) setChat(fromX(e.clientX), false); });
+    const stop = e => { if (!split.classList.contains("dragging")) return;
+      split.classList.remove("dragging"); document.body.classList.remove("resizing"); setChat(fromX(e.clientX), true); };
+    split.addEventListener("pointerup", stop);
+    split.addEventListener("pointercancel", stop);
+    split.addEventListener("dblclick", () => setChat(DEFAULT, true));
+    split.addEventListener("keydown", e => {
+      const cur = parseFloat(chat.style.flexBasis) || DEFAULT;
+      if (e.key === "ArrowLeft") { setChat(cur + 5, true); e.preventDefault(); }
+      if (e.key === "ArrowRight") { setChat(cur - 5, true); e.preventDefault(); }
+    });
+    window.addEventListener("resize", resizeCharts);
+  })();
+</script>
+</body>
+</html>

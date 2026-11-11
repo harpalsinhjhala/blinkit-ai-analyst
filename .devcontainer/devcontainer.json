@@ -1,0 +1,17 @@
+{
+  "name": "Jhala AI - Blinkit Pulse",
+  "image": "mcr.microsoft.com/devcontainers/python:3.10",
+  "postCreateCommand": "pip install -r requirements.txt",
+  "postAttachCommand": "HOST=0.0.0.0 python app.py",
+  "forwardPorts": [8000],
+  "portsAttributes": { "8000": { "label": "Jhala AI", "onAutoForward": "openBrowser" } },
+  "secrets": {
+    "GROQ_API_KEY": { "description": "Groq API key (console.groq.com)" },
+    "TENANT_ID": { "description": "Microsoft Entra tenant ID" },
+    "AZURE_CLIENT_ID": { "description": "Service principal (app registration) client ID" },
+    "AZURE_CLIENT_SECRET": { "description": "Service principal client secret" },
+    "WORKSPACE_ID": { "description": "Power BI workspace ID" },
+    "SEMANTIC_MODEL_ID": { "description": "Blinkit Pulse semantic model ID" },
+    "REPORT_ID": { "description": "Blinkit Pulse report ID" }
+  }
+}

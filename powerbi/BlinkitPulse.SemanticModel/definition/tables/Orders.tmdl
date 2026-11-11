@@ -1,0 +1,201 @@
+/// One row per order (orders, order items, delivery performance and customer feedback are all 1:1 on order). Mar 2023 – Nov 2024.
+table Orders
+	lineageTag: a58b71e8-7a68-4548-a713-16d2b056d07e
+
+	column 'Order ID'
+		dataType: int64
+		lineageTag: 5091a26b-cc97-4db2-9c5f-08c211a630f6
+		summarizeBy: none
+		sourceColumn: order_id
+
+	column 'Customer ID'
+		dataType: int64
+		isHidden
+		lineageTag: 3421c9b0-87fb-4699-af12-fd02a005cfd0
+		summarizeBy: none
+		sourceColumn: customer_id
+
+	column 'Product ID'
+		dataType: int64
+		isHidden
+		lineageTag: a8d8850c-8e7f-43cf-ae17-b784a5c6de68
+		summarizeBy: none
+		sourceColumn: product_id
+
+	column 'Order Date'
+		dataType: dateTime
+		isHidden
+		formatString: dd mmm yyyy
+		lineageTag: a857b195-877c-4c4d-83a6-186f03580f72
+		summarizeBy: none
+		sourceColumn: order_date
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	/// Hour of day the order was placed (0–23).
+	column 'Order Hour'
+		dataType: int64
+		lineageTag: bb1f3f23-59c7-463d-b63f-5f8259f3c245
+		summarizeBy: none
+		sourceColumn: order_hour
+
+	/// Time-of-day bucket based on order hour.
+	column 'Day Part'
+		dataType: string
+		lineageTag: 490b0ac7-5246-4d68-944f-9953d8ab10d5
+		summarizeBy: none
+		sourceColumn: day_part
+		sortByColumn: 'Day Part Sort'
+
+	column 'Day Part Sort'
+		dataType: int64
+		isHidden
+		lineageTag: 540149cb-78a2-40f5-8f42-d248ee669b21
+		summarizeBy: none
+		sourceColumn: day_part_sort
+
+	column 'Payment Method'
+		dataType: string
+		lineageTag: c85fbf5b-b6fa-4e1e-af02-7abb6988dcf6
+		summarizeBy: none
+		sourceColumn: payment_method
+
+	/// On Time, Slightly Delayed or Significantly Delayed, as recorded by the source.
+	column 'Delivery Status'
+		dataType: string
+		lineageTag: 46bf3e84-ca97-4ac6-879d-82c9efc27aea
+		summarizeBy: none
+		sourceColumn: delivery_status
+		sortByColumn: 'Delivery Status Sort'
+
+	column 'Delivery Status Sort'
+		dataType: int64
+		isHidden
+		lineageTag: d8f2267f-8510-45b8-9e8d-fc64be2f5e6f
+		summarizeBy: none
+		sourceColumn: delivery_status_sort
+
+	column 'Is On Time'
+		dataType: int64
+		isHidden
+		lineageTag: e0f4f19e-2eff-4cf6-8e41-a93f3058030e
+		summarizeBy: none
+		sourceColumn: is_on_time
+
+	/// Reason recorded for delayed orders only; blank for on-time orders.
+	column 'Delay Reason'
+		dataType: string
+		lineageTag: 1b9bd1b9-e7b1-4e99-a4a8-93d4f2f48b23
+		summarizeBy: none
+		sourceColumn: delay_reason
+
+	column 'Promised Minutes'
+		dataType: decimal
+		isHidden
+		lineageTag: 37788783-2917-45c1-a851-438f7299fdcc
+		summarizeBy: none
+		sourceColumn: promised_minutes
+
+	column 'Delivery Minutes'
+		dataType: decimal
+		isHidden
+		lineageTag: 4359dbd2-b4ab-467d-baed-f3237665579c
+		summarizeBy: none
+		sourceColumn: delivery_minutes
+
+	/// Bucket of minutes from order placed to delivered.
+	column 'Delivery Time Band'
+		dataType: string
+		lineageTag: 1da2a9c1-8e4a-4db6-8195-5e7099fb1b59
+		summarizeBy: none
+		sourceColumn: delivery_time_band
+		sortByColumn: 'Delivery Time Band Sort'
+
+	column 'Delivery Time Band Sort'
+		dataType: int64
+		isHidden
+		lineageTag: 40153a16-273a-4268-9b85-985935832b46
+		summarizeBy: none
+		sourceColumn: delivery_time_band_sort
+
+	column 'Delay Minutes'
+		dataType: decimal
+		isHidden
+		lineageTag: e7de2c99-ddbb-4b86-950d-8e2e10af8039
+		summarizeBy: none
+		sourceColumn: delay_minutes
+
+	column 'Distance Km'
+		dataType: decimal
+		isHidden
+		lineageTag: 65c7c4a6-e247-4d71-8f96-16b18da30fc3
+		summarizeBy: none
+		sourceColumn: distance_km
+
+	column Quantity
+		dataType: int64
+		isHidden
+		lineageTag: 116d6b56-a762-42af-90e1-be58d44a9253
+		summarizeBy: none
+		sourceColumn: quantity
+
+	column 'Order Total'
+		dataType: decimal
+		isHidden
+		lineageTag: 966f41ef-431b-416a-81c4-8d8945dd2b30
+		summarizeBy: none
+		sourceColumn: order_total
+
+	column 'Gross Margin Amount'
+		dataType: decimal
+		isHidden
+		lineageTag: 6491d5f1-1625-4797-b386-38e1211eb8da
+		summarizeBy: none
+		sourceColumn: gross_margin
+
+	/// Customer rating for the order, 1 (worst) to 5 (best).
+	column Rating
+		dataType: int64
+		lineageTag: f34c4ea2-a6f7-45e4-a5d6-9daec5189e99
+		summarizeBy: none
+		sourceColumn: rating
+
+	/// Area the customer's feedback was about.
+	column 'Feedback Category'
+		dataType: string
+		lineageTag: 0f9d2d12-cdc4-4d6d-b15c-0f0c593ff6ec
+		summarizeBy: none
+		sourceColumn: feedback_category
+
+	column Sentiment
+		dataType: string
+		lineageTag: c7311d29-8098-472c-9b2f-442ed9d8973e
+		summarizeBy: none
+		sourceColumn: sentiment
+
+	partition Orders = m
+		mode: import
+		source =
+				let
+					Source = Csv.Document(Web.Contents(DataFolder & "fact_orders.csv"), [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
+					Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+					Typed = Table.TransformColumnTypes(
+						Promoted,
+						{
+							{"order_id", Int64.Type}, {"customer_id", Int64.Type}, {"product_id", Int64.Type},
+							{"order_date", type date}, {"order_hour", Int64.Type},
+							{"day_part", type text}, {"day_part_sort", Int64.Type},
+							{"payment_method", type text}, {"delivery_status", type text}, {"delivery_status_sort", Int64.Type},
+							{"is_on_time", Int64.Type}, {"delay_reason", type text},
+							{"promised_minutes", Currency.Type}, {"delivery_minutes", Currency.Type},
+							{"delivery_time_band", type text}, {"delivery_time_band_sort", Int64.Type},
+							{"delay_minutes", Currency.Type}, {"distance_km", Currency.Type},
+							{"quantity", Int64.Type}, {"order_total", Currency.Type}, {"gross_margin", Currency.Type},
+							{"rating", Int64.Type}, {"feedback_category", type text}, {"sentiment", type text}
+						},
+						"en-US"
+					),
+					BlankToNull = Table.ReplaceValue(Typed, "", null, Replacer.ReplaceValue, {"delay_reason"})
+				in
+					BlankToNull
+

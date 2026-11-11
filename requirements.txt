@@ -1,0 +1,7 @@
+azure-identity
+requests
+python-dotenv
+mcp>=1.2,<2
+fastapi
+uvicorn[standard]
+pyyaml

@@ -1,0 +1,11 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+  "metadata": {
+    "type": "SemanticModel",
+    "displayName": "Blinkit Pulse"
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "ed3bfd1c-6ce4-4096-adb6-b2eb84aed27f"
+  }
+}

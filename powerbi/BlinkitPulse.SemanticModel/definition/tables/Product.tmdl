@@ -1,0 +1,78 @@
+/// Product catalogue: one row per product (268 products, 11 categories).
+table Product
+	lineageTag: 190529a8-40d3-4e6b-91a0-c01252557f11
+
+	column 'Product ID'
+		dataType: int64
+		isHidden
+		isKey
+		lineageTag: f7d35bf0-4411-424e-8844-dda9dfc3b0e8
+		summarizeBy: none
+		sourceColumn: product_id
+
+	column 'Product Name'
+		dataType: string
+		lineageTag: bff3d2e3-5df4-45c5-bdf6-636f80e25654
+		summarizeBy: none
+		sourceColumn: product_name
+
+	column Category
+		dataType: string
+		lineageTag: ce23ee6d-df25-443d-a0cb-91dbedf9d89a
+		summarizeBy: none
+		sourceColumn: category
+
+	column Brand
+		dataType: string
+		lineageTag: e8981e81-5134-409c-851f-94237aa924aa
+		summarizeBy: none
+		sourceColumn: brand
+
+	/// Current selling price (INR).
+	column Price
+		dataType: decimal
+		formatString: ₹#,##0.00
+		lineageTag: c82c82e0-17f9-46c3-9962-5043062846e1
+		summarizeBy: none
+		sourceColumn: price
+
+	/// Maximum retail price (INR).
+	column MRP
+		dataType: decimal
+		formatString: ₹#,##0.00
+		lineageTag: 8b943b4d-4cde-4405-8cd5-1b41e971934b
+		summarizeBy: none
+		sourceColumn: mrp
+
+	/// Product gross margin percentage, e.g. 25 = 25%.
+	column 'Margin %'
+		dataType: decimal
+		formatString: 0.0
+		lineageTag: b8912fab-1257-4689-8b39-7fedd0b2f132
+		summarizeBy: none
+		sourceColumn: margin_pct
+
+	column 'Shelf Life Days'
+		dataType: int64
+		lineageTag: 7170cc72-f8af-4ac4-8afb-dee57f5102df
+		summarizeBy: none
+		sourceColumn: shelf_life_days
+
+	partition Product = m
+		mode: import
+		source =
+				let
+					Source = Csv.Document(Web.Contents(DataFolder & "dim_product.csv"), [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
+					Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+					Selected = Table.SelectColumns(Promoted, {"product_id", "product_name", "category", "brand", "price", "mrp", "margin_pct", "shelf_life_days"}),
+					Typed = Table.TransformColumnTypes(
+						Selected,
+						{
+							{"product_id", Int64.Type}, {"product_name", type text}, {"category", type text}, {"brand", type text},
+							{"price", Currency.Type}, {"mrp", Currency.Type}, {"margin_pct", Currency.Type}, {"shelf_life_days", Int64.Type}
+						},
+						"en-US"
+					)
+				in
+					Typed
+

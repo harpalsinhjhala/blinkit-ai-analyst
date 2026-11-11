@@ -1,0 +1,11 @@
+# Secrets and sign-in records: never commit
+.env
+.env.*
+!.env.example
+.auth_record*.json
+# Local Python
+.venv/
+__pycache__/
+# Power BI Desktop local caches
+**/.pbi/localSettings.json
+**/.pbi/cache.abf

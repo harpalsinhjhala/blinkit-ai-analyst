@@ -1,0 +1,49 @@
+/// Daily stock movements: one row per product per day received.
+table Inventory
+	lineageTag: 5de040ee-1fdf-439b-aea1-bbcb61ec743d
+
+	column 'Product ID'
+		dataType: int64
+		isHidden
+		lineageTag: 08eed499-be92-4dd0-8087-1e54d09b0099
+		summarizeBy: none
+		sourceColumn: product_id
+
+	column Date
+		dataType: dateTime
+		isHidden
+		formatString: dd mmm yyyy
+		lineageTag: ae0996b7-1acd-4c3d-b188-6ca063d080c4
+		summarizeBy: none
+		sourceColumn: date
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column 'Units Received'
+		dataType: int64
+		isHidden
+		lineageTag: 7af31976-929d-4857-909c-0eaa29c60dd1
+		summarizeBy: none
+		sourceColumn: stock_received
+
+	column 'Units Damaged'
+		dataType: int64
+		isHidden
+		lineageTag: f9872e30-eafd-4008-aaf4-1cbf42b4c75f
+		summarizeBy: none
+		sourceColumn: damaged_stock
+
+	partition Inventory = m
+		mode: import
+		source =
+				let
+					Source = Csv.Document(Web.Contents(DataFolder & "fact_inventory.csv"), [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
+					Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+					Typed = Table.TransformColumnTypes(
+						Promoted,
+						{{"product_id", Int64.Type}, {"date", type date}, {"stock_received", Int64.Type}, {"damaged_stock", Int64.Type}},
+						"en-US"
+					)
+				in
+					Typed
+

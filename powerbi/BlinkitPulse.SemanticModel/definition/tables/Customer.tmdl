@@ -1,0 +1,65 @@
+/// Customer master: one row per registered customer (2,500). Personal data (name, email, phone, address) is excluded.
+table Customer
+	lineageTag: 683ca5dd-7c47-4ff5-a5b3-98cb8bdf2caa
+
+	column 'Customer ID'
+		dataType: int64
+		isHidden
+		isKey
+		lineageTag: 87e6e2d8-f9fe-4ba6-9ec7-7bb117928235
+		summarizeBy: none
+		sourceColumn: customer_id
+
+	column City
+		dataType: string
+		lineageTag: db8e32ef-a479-44ff-9f56-c89513429703
+		dataCategory: City
+		summarizeBy: none
+		sourceColumn: city
+
+	column 'Registration Date'
+		dataType: dateTime
+		formatString: dd mmm yyyy
+		lineageTag: 5199f27b-816c-41c5-a7d3-f6cbce362a25
+		summarizeBy: none
+		sourceColumn: registration_date
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	/// Segment assigned by the source: New, Regular, Premium or Inactive.
+	column 'Customer Segment'
+		dataType: string
+		lineageTag: bd6025d9-d611-46fe-9fb5-290fac8f31e0
+		summarizeBy: none
+		sourceColumn: customer_segment
+
+	/// Date of the customer's first order in the dataset; blank if they never ordered.
+	column 'First Order Date'
+		dataType: dateTime
+		isHidden
+		formatString: dd mmm yyyy
+		lineageTag: c1321d0a-4f71-4deb-8baf-191efe3b3de3
+		summarizeBy: none
+		sourceColumn: first_order_date
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	partition Customer = m
+		mode: import
+		source =
+				let
+					Source = Csv.Document(Web.Contents(DataFolder & "dim_customer.csv"), [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
+					Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+					Selected = Table.SelectColumns(Promoted, {"customer_id", "city", "registration_date", "customer_segment", "first_order_date"}),
+					BlankToNull = Table.ReplaceValue(Selected, "", null, Replacer.ReplaceValue, {"first_order_date"}),
+					Typed = Table.TransformColumnTypes(
+						BlankToNull,
+						{
+							{"customer_id", Int64.Type}, {"city", type text}, {"registration_date", type date},
+							{"customer_segment", type text}, {"first_order_date", type date}
+						},
+						"en-US"
+					)
+				in
+					Typed
+

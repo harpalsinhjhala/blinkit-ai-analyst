@@ -1,0 +1,198 @@
+{
+  "name": "BlinkitQC-826ff5c0.json",
+  "dataColors": [
+    "#F8CB46",
+    "#0C831F",
+    "#1C1C1C",
+    "#D64545",
+    "#54B226",
+    "#C9CED6",
+    "#7A7A7A",
+    "#B8E0BF"
+  ],
+  "good": "#0C831F",
+  "neutral": "#F8CB46",
+  "bad": "#D64545",
+  "maximum": "#F8CB46",
+  "center": "#EDB21C",
+  "minimum": "#FEF6DC",
+  "background": "#FFFFFF",
+  "foreground": "#1C1C1C",
+  "tableAccent": "#F8CB46",
+  "textClasses": {
+    "callout": {
+      "fontSize": 34,
+      "fontFace": "'Segoe UI Semibold', wf_segoe-ui_semibold, helvetica, arial, sans-serif",
+      "color": "#1C1C1C"
+    },
+    "title": {
+      "fontSize": 16,
+      "fontFace": "'Segoe UI Semibold', wf_segoe-ui_semibold, helvetica, arial, sans-serif",
+      "color": "#1C1C1C"
+    },
+    "header": {
+      "fontSize": 12,
+      "fontFace": "'Segoe UI Semibold', wf_segoe-ui_semibold, helvetica, arial, sans-serif",
+      "color": "#1C1C1C"
+    },
+    "label": {
+      "fontSize": 12,
+      "fontFace": "'Segoe UI Semibold', wf_segoe-ui_semibold, helvetica, arial, sans-serif",
+      "color": "#3D3D3D"
+    }
+  },
+  "visualStyles": {
+    "*": {
+      "*": {
+        "border": [
+          {
+            "show": true,
+            "color": {
+              "solid": {
+                "color": "#E8E8E8"
+              }
+            },
+            "radius": 12
+          }
+        ],
+        "dropShadow": [
+          {
+            "show": false
+          }
+        ],
+        "padding": [
+          {
+            "top": 8,
+            "bottom": 8,
+            "left": 8,
+            "right": 8
+          }
+        ],
+        "visualHeader": [
+          {
+            "show": false
+          }
+        ],
+        "categoryAxis": [
+          {
+            "gridlineStyle": "solid",
+            "gridlineColor": {
+              "solid": {
+                "color": "#F0F0F0"
+              }
+            }
+          }
+        ],
+        "valueAxis": [
+          {
+            "gridlineStyle": "solid",
+            "gridlineColor": {
+              "solid": {
+                "color": "#F0F0F0"
+              }
+            }
+          }
+        ]
+      }
+    },
+    "barChart": {
+      "*": {
+        "categoryAxis": [
+          {
+            "innerPadding": 28
+          }
+        ],
+        "legend": [
+          {
+            "show": false
+          }
+        ]
+      }
+    },
+    "columnChart": {
+      "*": {
+        "categoryAxis": [
+          {
+            "innerPadding": 28
+          }
+        ],
+        "legend": [
+          {
+            "show": false
+          }
+        ]
+      }
+    },
+    "clusteredColumnChart": {
+      "*": {
+        "categoryAxis": [
+          {
+            "innerPadding": 30
+          }
+        ]
+      }
+    },
+    "lineChart": {
+      "*": {
+        "lineStyles": [
+          {
+            "lineChartType": "smooth",
+            "interpolationSmooth": "monotoneX",
+            "areaMatchStrokeColor": true
+          }
+        ]
+      }
+    },
+    "slicer": {
+      "*": {
+        "header": [
+          {
+            "fontFamily": "'Segoe UI Semibold', wf_segoe-ui_semibold, helvetica, arial, sans-serif",
+            "textSize": 11,
+            "fontColor": {
+              "solid": {
+                "color": "#666666"
+              }
+            },
+            "outlineStyle": 0
+          }
+        ],
+        "items": [
+          {
+            "fontFamily": "'Segoe UI', wf_segoe-ui_normal, helvetica, arial, sans-serif",
+            "textSize": 12,
+            "fontColor": {
+              "solid": {
+                "color": "#1C1C1C"
+              }
+            },
+            "outlineStyle": 0,
+            "padding": 2
+          }
+        ]
+      }
+    },
+    "textbox": {
+      "*": {
+        "padding": [
+          {
+            "top": 0,
+            "bottom": 0,
+            "left": 0,
+            "right": 0
+          }
+        ],
+        "background": [
+          {
+            "show": false
+          }
+        ],
+        "border": [
+          {
+            "show": false
+          }
+        ]
+      }
+    }
+  }
+}
